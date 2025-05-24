@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyber Café Landing Page</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+    }
+    .hero {
+      background: url('https://cdn.pixabay.com/photo/2017/10/10/21/47/laptop-2838921_1280.jpg') no-repeat center center/cover;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-shadow: 0 0 10px black;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+    .register-btn {
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      background-color: linear-gradient(to right, #6a11cb, #2575fc);
+      border: none;
+      border-radius: 5px;
+      color:white;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+    .register-btn:hover {
+      background-color:blue;
+	    color #8ec5fc:;   
+    }
+	.login-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  background-color: transparent;
+  border: 2px solid white;
+  border-radius: 5px;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+.login-btn:hover {
+  background-color: white;
+  color: #333;
+}
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <h1>Welcome to Cyber Café</h1>
+	<a href="login.php" class="login-btn">Login</a>
+    <a href="register.php" class="register-btn">Register Now</a>
+  </div>
+
+</body>
+</html>

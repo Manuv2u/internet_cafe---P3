@@ -3,6 +3,7 @@ require 'db_connect.php';
 
 $user = null;
 $message = "";
+$selected_mode = "available";
 
 // Load available computers
 $computers = $conn->query("SELECT computer_name, computer_name FROM computers WHERE status = 'available'");
@@ -17,7 +18,33 @@ if (isset($_GET['search'])) {
     $user = $result->fetch_assoc();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (isset($_GET['modeSelector'])) {
+    $selected_mode = $_GET['modeSelector'];
+    $search = $_GET['user'];
+    $stmt = $conn->prepare("SELECT * FROM user WHERE name LIKE ? OR mobile_number LIKE ?");
+    $searchTerm = "%$search%";
+    $stmt->bind_param("ss", $searchTerm, $searchTerm);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+
+    $all_bookings = [];
+    $bookings_result = $conn->query("
+        SELECT b.id, u.name as user_name, b.computer_name, b.start_session
+        FROM bookings b
+        JOIN user u ON b.user_id = u.id 
+        JOIN computers c ON b.computer_name = c.computer_name AND c.status = 'in use' 
+        ORDER BY b.start_session ASC
+    ");
+    if ($bookings_result) {
+        while ($row = $bookings_result->fetch_assoc()) {
+            $all_bookings[] = $row;
+        }
+    } else {
+        $message = "Error fetching bookings: " . $conn->error;
+    }
+
+} else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_POST['user_id'];
     $computer_id = $_POST['computer_id'];
     $start_session = $_POST['start_session'];
@@ -133,6 +160,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p><strong>Mobile:</strong> <?= htmlspecialchars($user['mobile_number']) ?></p>
         </div>
 
+        <form action="" method="GET">
+            <label for="appModeSelector" class="block text-lg font-medium text-gray-700 mb-2">
+                Select Mode:
+            </label>
+            <input type="hidden" name="user" value="<?= $search ?>">
+            <select id="modeSelector" name="modeSelector" onchange="this.form.submit()">
+                <option value="available" <?php echo ($selected_mode === 'available') ? 'selected' : ''; ?>>Book Session</option>
+                <option value="in_use" <?php echo ($selected_mode === 'in_use') ? 'selected' : ''; ?>>View All Bookings</option>
+            </select>
+        </form>
+
+        <div id="add_session_form">
         <form method="POST">
             <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
 
@@ -155,6 +194,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <button type="submit">Generate Bill</button>
         </form>
+        </div>
+
+        <div id="test">
+            <label>TEST</label>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>User Name</th>
+                        <th>Computer Name</th>
+                        <th>Start Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($all_bookings as $booking): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($booking['id']) ?></td>
+                            <td><?= htmlspecialchars($booking['user_name']) ?></td>
+                            <td><?= htmlspecialchars($booking['computer_name']) ?></td>
+                            <td><?= htmlspecialchars(date('Y-m-d H:i', strtotime($booking['start_session']))) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    
     <?php elseif (isset($_GET['search'])): ?>
         <p class="info">No user found matching your search.</p>
     <?php endif; ?>
@@ -162,10 +227,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
 window.onload = function () {
+    const opt = document.getElementById('modeSelector');
+    const urlParams = new URLSearchParams(window.location.search);
+    const myParam = urlParams.get('modeSelector');
+    if(myParam === 'available'){
+        document.getElementById('add_session_form').style.display = 'block'
+        document.getElementById('test').style.visibility = 'none'
+    }
+    else if(myParam === 'in_use'){
+        document.getElementById('add_session_form').style.display = 'none'
+        document.getElementById('test').style.display = 'block'
+    }
+    else{
+        document.getElementById('add_session_form').style.display = 'block'
+        document.getElementById('test').style.display = 'none'
+    }
+
     const now = new Date();
     now.setSeconds(0, 0);
 
-    const iso = now.toISOString().slice(0, 16); // yyyy-MM-ddTHH:mm
+    const iso = now.toLocaleString('sv').replace(' ', 'T').slice(0, 16); 
+
     const startInput = document.getElementById('start_session');
     const endInput = document.getElementById('end_session');
 

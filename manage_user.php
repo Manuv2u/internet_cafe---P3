@@ -1,10 +1,20 @@
-
 <?php
 require 'db_connect.php';
 
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
-    $conn->query("DELETE FROM user WHERE id = $id");
+
+    if (is_numeric($id)) {
+        $stmt = $conn->prepare("DELETE FROM user WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $stmt->close();
+
+        header("Location: manage_user.php");
+        exit();
+    } else {
+        echo "Invalid ID.";
+    }
 }
 
 $sql = "SELECT * FROM user";
@@ -20,23 +30,18 @@ $result = $conn->query($sql);
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
-    * {
-        box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
         font-family: 'Poppins', sans-serif;
         background: linear-gradient(135deg, #e0c3fc, #8ec5fc 100%);
         margin: 0;
         padding: 20px;
     }
-
     h2 {
         text-align: center;
         color: #333;
         margin-bottom: 20px;
     }
-
     .add-link, .view-old-link {
         display: inline-block;
         text-align: center;
@@ -50,12 +55,10 @@ $result = $conn->query($sql);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         transition: background 0.3s ease, transform 0.2s;
     }
-
     .add-link:hover, .view-old-link:hover {
         transform: scale(1.03);
         opacity: 0.9;
     }
-
     table {
         width: 95%;
         margin: auto;
@@ -65,52 +68,40 @@ $result = $conn->query($sql);
         overflow: hidden;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     }
-
     th, td {
         padding: 14px 16px;
         text-align: center;
         border-bottom: 1px solid #ddd;
     }
-
     th {
         background-color:#8ec5fc ;
         color: white;
         font-weight: 600;
     }
-
     tr:nth-child(even) {
         background-color: #f9f9f9;
     }
-
     tr:hover {
         background-color: #e6f7ff;
     }
-
     a.action-link {
         color: #007bff;
         text-decoration: none;
         font-weight: 600;
         margin: 0 6px;
     }
-
     a.action-link:hover {
         text-decoration: underline;
     }
-	.delete-btn{
-		color:red!important;
-	}
+    .delete-btn {
+        color: red !important;
+        cursor: pointer;
+    }
 </style>
 </head>
 <body>
 
-
-
 <h2>Manage Users</h2>
-
-<!--<div style="text-align: center;">
-    <!--<a class="add-link" href="add_user.php"></a>
-    <!--<a class="view-old-link" href="old_user.php"></a>
-!<--</div>-->
 
 <table>
     <tr>
@@ -152,7 +143,7 @@ document.querySelectorAll('.delete-btn').forEach(button => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#e74c3c',
-            cancelButtonColor: ' #2575fc',
+            cancelButtonColor: '#2575fc',
             confirmButtonText: 'Delete',
             cancelButtonText: 'Cancel'
         }).then((result) => {

@@ -29,6 +29,9 @@ $result = $conn->query($sql);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #e0c3fc, #8ec5fc 100%);
@@ -72,7 +75,7 @@ $result = $conn->query($sql);
             border-bottom: 1px solid #ddd;
         }
         th {
-            background-color:#8ec5fc ;
+            background-color: #8ec5fc;
             color: white;
             font-weight: 600;
         }
@@ -107,7 +110,6 @@ $result = $conn->query($sql);
     <tr>
         <th>ID</th>
         <th>Computer Name</th>
-        <th>Specification</th>
         <th>Status</th>
         <th>Actions</th>
     </tr>
@@ -115,7 +117,6 @@ $result = $conn->query($sql);
     <tr>
         <td><?= $row['id'] ?></td>
         <td><?= htmlspecialchars($row['computer_name']) ?></td>
-        <td><?= htmlspecialchars($row['specification']) ?></td>
         <td><?= htmlspecialchars($row['status']) ?></td>
         <td>
             <a class="action-link" href="edit_computer.php?id=<?= $row['id'] ?>"><i class="fas fa-edit"></i> Edit</a>

@@ -6,7 +6,7 @@ $message = "";
 $selected_mode = "available";
 
 // Load available computers
-$computers = $conn->query("SELECT computer_name, computer_name FROM computers WHERE status = 'available'");
+$computers = $conn->query("SELECT computer_name, computer_name, id FROM computers WHERE status = 'available'");
 
 if (isset($_GET['search'])) {
     $search = $_GET['search'];
@@ -17,6 +17,17 @@ if (isset($_GET['search'])) {
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
 }
+
+if(isset($_GET['computer_id'])){
+    $computer_id = $_GET['computer_id'];
+    $stmt = $conn -> prepare("SELECT computer_name, computer_name, id FROM computers WHERE id = ? ");
+    $stmt->bind_param('i',$computer_id);
+    $stmt->execute();
+    $computer = $stmt->get_result()->fetch_assoc();
+}
+$all_bookings = [];
+
+
 
 if (isset($_GET['modeSelector'])) {
     $selected_mode = $_GET['modeSelector'];
@@ -30,7 +41,7 @@ if (isset($_GET['modeSelector'])) {
 
     $all_bookings = [];
     $bookings_result = $conn->query("
-        SELECT b.id, u.name as user_name, b.computer_name, b.start_session
+        SELECT b.id, u.name as user_name, b.computer_name, b.start_session,c.id as cid
         FROM bookings b
         JOIN user u ON b.user_id = u.id 
         JOIN computers c ON b.computer_name = c.computer_name AND c.status = 'in use' 
@@ -71,7 +82,7 @@ if (isset($_GET['modeSelector'])) {
                 $conn->query("UPDATE computers SET status = 'available' WHERE id = $computer_id");
                 $message = "Booking recorded. Session ended. Duration: {$duration} mins, Bill: ₹" . number_format($amount_billed, 2);
             } else {
-                $conn->query("UPDATE computers SET status = 'in_use' WHERE id = $computer_id");
+                $conn->query("UPDATE computers SET status = 'in use' WHERE id = $computer_id");
                 $message = "Booking recorded. Duration: {$duration} mins, Bill: ₹" . number_format($amount_billed, 2);
             }
         }
@@ -198,7 +209,7 @@ if (isset($_GET['modeSelector'])) {
 
         <div id="test">
             <label>TEST</label>
-            <table>
+            <table id="booking_table">
                 <thead>
                     <tr>
                         <th>Booking ID</th>
@@ -232,7 +243,7 @@ window.onload = function () {
     const myParam = urlParams.get('modeSelector');
     if(myParam === 'available'){
         document.getElementById('add_session_form').style.display = 'block'
-        document.getElementById('test').style.visibility = 'none'
+        document.getElementById('test').style.display = 'none'
     }
     else if(myParam === 'in_use'){
         document.getElementById('add_session_form').style.display = 'none'
@@ -267,6 +278,46 @@ window.onload = function () {
     document.querySelectorAll('input[type="datetime-local"]').forEach(input => {
         input.addEventListener('paste', e => e.preventDefault());
     });
+
+    const table = document.getElementById("booking_table")
+    if(table){
+        const rows = table.getElementsByTagName('tr');
+        if(rows){
+            Array.from(rows).forEach((row,index)=>{
+                row.addEventListener('click', () => {
+                        var host =   "http://" + window.location.host;
+                        var user = <?php echo json_encode($user); ?>;
+                        var bookings = <?php echo json_encode($all_bookings); ?>;
+                        console.log(bookings)
+                        console.log(user)
+                        const cells = row.getElementsByTagName('td');
+                        console.log(cells[0]);
+                        console.log(cells[1]);
+
+                        const booking_id = cells[0].innerHTML;
+                        console.log(booking_id);
+                        console.log(index);
+                        let index1 = index
+                        let selected_booking = bookings[index1 - 1]
+                        console.log(selected_booking);
+                        console.log(host)
+
+                        let url = new URL(host+"/p/edit_booking.php")
+                        url.searchParams.append('user',user['name'])
+                        url.searchParams.append('computer_id',selected_booking['cid'])
+                        url.searchParams.append('booking_id',booking_id)
+
+                        host = host + '/p/edit_booking.php?user='+user['name']+"&computer_id="+selected_booking['cid']
+                        console.log(url.toString())
+                        window.location.href = url.toString()
+
+                        const content2 = cells[1].innerHTML;
+                        console.log(content2);
+                     });
+            })
+        }
+    }
+
 };
 </script>
 

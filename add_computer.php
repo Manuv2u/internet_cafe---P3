@@ -203,8 +203,7 @@ button:hover {
         }
     </style>
 </head>
-<body>
-<?php include 'navbar.php';?>
+<body></body>
 
 <!-- Navbar -->
 <div class="navbar">

@@ -5,15 +5,25 @@ if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
 
     if (is_numeric($id)) {
-        $stmt = $conn->prepare("DELETE FROM user WHERE id = ?");
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $stmt->close();
+        try {
+            // Attempt to delete the user
+            $stmt = $conn->prepare("DELETE FROM user WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $stmt->close();
 
-        header("Location: manage_user.php");
-        exit();
+            header("Location: manage_user.php");
+            exit();
+        } catch (mysqli_sql_exception $e) {
+            // Catch foreign key constraint failure
+            echo "<script>
+                alert('Cannot delete user: related records exist in other tables.');
+                window.location.href = 'manage_user.php';
+            </script>";
+            exit();
+        }
     } else {
-        echo "Invalid ID.";
+        echo "<script>alert('Invalid ID');</script>";
     }
 }
 
@@ -148,7 +158,7 @@ document.querySelectorAll('.delete-btn').forEach(button => {
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href = 'manage_user.php?delete=${id}';
+                window.location.href = `manage_user.php?delete=${id}`;
             }
         });
     });

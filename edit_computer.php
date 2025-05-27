@@ -24,14 +24,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ip = trim($_POST['ip_address']);
     $status = $_POST['status'];
 
-    $update = $conn->prepare("UPDATE computers SET computer_name = ?, ip_address = ?, status = ? WHERE id = ?");
-    $update->bind_param("sssi", $name, $ip, $status, $id);
-
-    if ($update->execute()) {
-        header("Location: manage_computers.php?updated=1");
-        exit();
+    if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+        $error = "Invalid IP address format.";
     } else {
-        $error = "Error updating computer.";
+        $update = $conn->prepare("UPDATE computers SET computer_name = ?, ip_address = ?, status = ? WHERE id = ?");
+        $update->bind_param("sssi", $name, $ip, $status, $id);
+
+        if ($update->execute()) {
+            header("Location: manage_computers.php?updated=1");
+            exit();
+        } else {
+            $error = "Error updating computer.";
+        }
     }
 }
 ?>
@@ -42,10 +46,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Edit Computer</title>
     <style>
-	 * {
+        * {
             box-sizing: border-box;
         }
-         body {
+
+        body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
             min-height: 100vh;
@@ -73,9 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         form input[type="text"],
-        form input[type="email"],
-        form select,
-        form textarea {
+        form select {
             width: 100%;
             padding: 12px 15px;
             margin-top: 10px;
@@ -86,18 +89,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transition: 0.3s;
         }
 
-        form input[type="text"]:focus,
-        form input[type="email"]:focus,
-        form select:focus,
-        form textarea:focus {
+        form input:focus,
+        form select:focus {
             border-color: #74ebd5;
             outline: none;
             box-shadow: 0 0 8px rgba(116, 235, 213, 0.5);
-        }
-
-        form textarea {
-            resize: vertical;
-            min-height: 80px;
         }
 
         button {
@@ -134,26 +130,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         p {
             text-align: center;
-            color: green;
+            color: red;
             font-weight: bold;
             margin-bottom: 20px;
         }
+        
     </style>
 </head>
-<div class="container">
- <div class="form-container">
+<body>
+<div class="form-container">
     <h2>Edit Computer</h2>
-    <?php if (isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
+    <?php if (isset($error)) echo "<p>$error</p>"; ?>
 
-    <form method="POST">
+    <form method="POST" id="editForm">
         <label>Computer Name:</label><br>
         <input type="text" name="computer_name" value="<?= htmlspecialchars($computer['computer_name']) ?>" required><br><br>
 
         <label>IP Address:</label><br>
-        <input type="text" name="ip_address" value="<?= htmlspecialchars($computer['ip_address']) ?>"><br><br>
+        <input type="text" name="ip_address" id="ip_address"
+               value="<?= htmlspecialchars($computer['ip_address']) ?>"
+               pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+               title="Enter a valid IP address like 192.168.0.1" required><br><br>
 
         <label>Status:</label><br>
-        <select name="status">
+          <select name="status">
             <option value="available" <?= $computer['status'] === 'available' ? 'selected' : '' ?>>Available</option>
             <option value="in use" <?= $computer['status'] === 'in use' ? 'selected' : '' ?>>In Use</option>
         </select><br><br>
@@ -161,5 +161,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit">Update</button>
         <a href="manage_computers.php">Cancel</a>
     </form>
+</div>
+
+<script>
+ // Optional JS validation (extra safety)
+    document.getElementById("editForm").addEventListener("submit", function (e) {
+        const ip = document.getElementById("ip_address").value.trim();
+        const regex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+        if (!regex.test(ip)) {
+            alert("Please enter a valid IP address (e.g., 192.168.0.1)");
+            e.preventDefault();
+        }
+    });
+</script>
+
 </body>
 </html>

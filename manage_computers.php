@@ -214,6 +214,7 @@ $result = $conn->query($sql);
     <tr>
         <th>ID</th>
         <th>Computer Name</th>
+         <th>IP Address</th>
         <th>Status</th>
         <th>Actions</th>
     </tr>
@@ -221,6 +222,7 @@ $result = $conn->query($sql);
     <tr>
         <td><?= $row['id'] ?></td>
         <td><?= htmlspecialchars($row['computer_name']) ?></td>
+        <td><?= htmlspecialchars($row['IP Address']) ?></td>
         <td><?= htmlspecialchars($row['status']) ?></td>
         <td>
             <a class="action-link" href="edit_computer.php?id=<?= $row['id'] ?>"><i class="fas fa-edit"></i> Edit</a>

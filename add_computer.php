@@ -203,7 +203,7 @@ button:hover {
         }
     </style>
 </head>
-<body></body>
+<body>
 
 <!-- Navbar -->
 <div class="navbar">

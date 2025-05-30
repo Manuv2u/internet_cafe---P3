@@ -160,7 +160,7 @@ if (isset($_GET['modeSelector'])) {
             <p><strong>Mobile:</strong> <?= htmlspecialchars($user['mobile_number']) ?></p>
         </div>
 
-        <form action="" method="GET">
+       <!-- <form action="" method="GET">
             <label for="appModeSelector" class="block text-lg font-medium text-gray-700 mb-2">
                 Select Mode:
             </label>
@@ -169,7 +169,7 @@ if (isset($_GET['modeSelector'])) {
                 <option value="available" <?php echo ($selected_mode === 'available') ? 'selected' : ''; ?>>Book Session</option>
                 <option value="in_use" <?php echo ($selected_mode === 'in_use') ? 'selected' : ''; ?>>View All Bookings</option>
             </select>
-        </form>
+        </form>-->
 
         <div id="add_session_form">
         <form method="POST">

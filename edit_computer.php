@@ -1,172 +1,108 @@
+<?php
+require 'db_connect.php';
+
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    die('❌ Invalid computer ID.');
+}
+
+$id = intval($_GET['id']);
+$message = "";
+
+// Fetch current data
+$stmt = $conn->prepare("SELECT * FROM computers WHERE id = ?");
+$stmt->bind_param("i", $id);
+$stmt->execute();
+$result = $stmt->get_result();
+$computer = $result->fetch_assoc();
+
+if (!$computer) {
+    die('❌ Computer not found.');
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $name = $_POST['computer_name'];
+    $ip = $_POST['ip_address'];
+    $status = $_POST['status'];
+
+    if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+        $message = "❌ Invalid IP address format.";
+    } else {
+        $update = $conn->prepare("UPDATE computers SET computer_name = ?, ip_address = ?, status = ? WHERE id = ?");
+        $update->bind_param("sssi", $name, $ip, $status, $id);
+        $message = $update->execute() ? "✅ Computer updated successfully!" : "❌ Error updating computer.";
+        // Refresh data after update
+        $stmt = $conn->prepare("SELECT * FROM computers WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $computer = $result->fetch_assoc();
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Computer</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-            min-height: 100vh;
-            margin: 0;
-            padding-top: 70px; /* Space for fixed navbar */
-        }
-
-        .form-container {
-            background: #ffffff;
-            padding: 40px 35px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            width: 100%;
-            max-width: 500px;
-            margin: auto;
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            color: #333;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        form input[type="text"],
-        form select {
-            width: 100%;
-            padding: 12px 15px;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 15px;
-        }
-
-        button {
-            background: linear-gradient(to right, #74ebd5, #ACB6E5);
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            width: 100%;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: linear-gradient(to right, #ACB6E5, #74ebd5);
-        }
-
-        a {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #333;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        p {
-            text-align: center;
-            color: red;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
+        /* Reuse the styles from add_computer.php */
+        /* ... (same styles as in your existing add_computer.php) ... */
+        /* Paste all CSS from your existing file here */
     </style>
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-white fixed-top">
-    <a class="navbar-brand font-weight-bold text-dark" href="dashboard.php">Dashboard</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarNavDropdown">
-        <ul class="navbar-nav">
-
-            <li class="nav-item dropdown font-weight-bold text-dark">
-                <a class="nav-link dropdown-toggle" href="computer.php" id="computerDropdown" role="button" data-toggle="dropdown"
-                   aria-haspopup="true" aria-expanded="false">
-                    Computer
-                </a>
-                <div class="dropdown-menu" aria-labelledby="computerDropdown">
-                    <a class="dropdown-item" href="add_computer.php">Add Computer</a>
-                    <a class="dropdown-item" href="manage_computers.php">Manage Computers</a>
-                </div>
-            </li>
-
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
-                   aria-haspopup="true" aria-expanded="false">
-                    User
-                </a>
-                <div class="dropdown-menu" aria-labelledby="userDropdown">
-                    <a class="dropdown-item" href="add_user.php">Add User</a>
-                    <a class="dropdown-item" href="manage_user.php">Manage Users</a>
-                </div>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="booking.php">Bookings</a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="search_user.php">Search</a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="generate_report.php">Report</a>
-            </li>
-        </ul>
+<!-- Navbar (same as add_computer.php) -->
+<div class="navbar">
+    <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-desktop"></i> Computer <i class="fas fa-caret-down"></i></a>
+        <div class="dropdown-content">
+            <a href="add_computer.php">Add Computer</a>
+            <a href="manage_computers.php">Manage Computers</a>
+        </div>
     </div>
-</nav>
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-users"></i> User <i class="fas fa-caret-down"></i></a>
+        <div class="dropdown-content">
+            <a href="add_user.php">Add User</a>
+            <a href="manage_user.php">Manage Users</a>
+        </div>
+    </div>
+    <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
+    <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
+    <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
+</div>
 
 <!-- Form -->
 <div class="form-container">
     <h2>Edit Computer</h2>
-    <?php if (isset($error)) echo "<p>$error</p>"; ?>
+    <?php
+        if (!empty($message)) {
+            echo "<div class='message " . (str_starts_with($message, '✅') ? '' : 'error') . "'>" . htmlspecialchars($message) . "</div>";
+        }
+    ?>
+    <form method="POST">
+        <label for="computer_name">Computer Name:</label>
+        <input type="text" id="computer_name" name="computer_name" value="<?= htmlspecialchars($computer['computer_name']) ?>" required>
 
-    <form method="POST" id="editForm">
-        <label>Computer Name:</label>
-        <input type="text" name="computer_name" value="<?= htmlspecialchars($computer['computer_name']) ?>" required>
+        <label for="ip_address">IP Address:</label>
+        <input type="text" id="ip_address" name="ip_address" value="<?= htmlspecialchars($computer['ip_address']) ?>" required pattern="^(\d{1,3}\.){3}\d{1,3}$" title="Enter a valid IP address (e.g. 192.168.1.1)">
 
-        <label>IP Address:</label>
-        <input type="text" name="ip_address" id="ip_address"
-               value="<?= htmlspecialchars($computer['ip_address']) ?>"
-               pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
-               title="Enter a valid IP address like 192.168.0.1" required>
-
-        <label>Status:</label>
-        <select name="status">
-            <option value="available" <?= $computer['status'] === 'available' ? 'selected' : '' ?>>Available</option>
-            <option value="in use" <?= $computer['status'] === 'in use' ? 'selected' : '' ?>>In Use</option>
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+            <option value="available" <?= $computer['status'] == 'available' ? 'selected' : '' ?>>Available</option>
+            <option value="in use" <?= $computer['status'] == 'in use' ? 'selected' : '' ?>>In Use</option>
         </select>
 
-        <button type="submit">Update</button>
-        <a href="manage_computers.php">Cancel</a>
+        <button type="submit">Update Computer</button>
     </form>
+    <a class="back-link" href="manage_computers.php">← Back to Manage Computers</a>
 </div>
-
-<!-- JS -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    // Optional JS IP validation
-    document.getElementById("editForm").addEventListener("submit", function (e) {
-        const ip = document.getElementById("ip_address").value.trim();
-        const regex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        if (!regex.test(ip)) {
-            alert("Please enter a valid IP address (e.g., 192.168.0.1)");
-            e.preventDefault();
-        }
-    });
-</script>
 
 </body>
 </html>
-

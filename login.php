@@ -70,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-bottom: 25px;
             font-weight: 700;
             background:black;
-            -webkit-background-clip: text;
+           -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 

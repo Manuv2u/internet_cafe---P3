@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -202,8 +203,7 @@ button:hover {
         }
     </style>
 </head>
-<body>
-<?php include 'navbar.php';?>
+<body></body>
 
 <!-- Navbar -->
 <div class="navbar">

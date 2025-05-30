@@ -1,181 +1,235 @@
 <?php
-include 'db_connect.php';
+require 'db_connect.php';
 
-date_default_timezone_set("Asia/Kolkata");
-$now = date('Y-m-d H:i:s');
-
-// Auto-update computers whose session ended
-$sql = "SELECT DISTINCT c.id 
-        FROM computers c
-        JOIN bookings b ON c.id = b.computer_name
-        WHERE c.status = 'in_use' AND b.end_session <= ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $now);
-$stmt->execute();
-$resultCheck = $stmt->get_result();
-
-while ($row = $resultCheck->fetch_assoc()) {
-    $comp_id = $row['id'];
-    $conn->query("UPDATE computers SET status = 'available' WHERE id = $comp_id");
-}
-
-// Delete handler
+// Delete logic using prepared statement
 if (isset($_GET['delete'])) {
-    $id = intval($_GET['delete']);
-    mysqli_query("DELETE FROM computers WHERE id = $id");
+    $id = intval($_GET['delete']); // ensure ID is an integer
+
+    $stmt = $conn->prepare("DELETE FROM computers WHERE id = ?");
+    $stmt->bind_param("i", $id);
+    if ($stmt->execute()) {
+        $stmt->close();
+        header("Location: manage_computers.php");
+        exit();
+    } else {
+        echo "<script>alert('Error deleting record. It may be linked to other data.');</script>";
+    }
 }
 
-$result = $conn->query("SELECT * FROM computers");
+$sql = "SELECT * FROM computers";
+$result = $conn->query($sql);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <meta charset="UTF-8">
     <title>Manage Computers</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
-            margin: 0;
-            padding: 40px 0;
+        * {
+            box-sizing: border-box;
         }
 
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #e0c3fc, #8ec5fc 100%);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 14px 30px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #ddd;
+        }
+
+        .navbar a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .navbar a:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            min-width: 180px;
+            overflow: hidden;
+            z-index: 999;
+        }
+
+        .dropdown-content a {
+            padding: 12px 16px;
+            color: #333;
+            display: block;
+            transition: background 0.3s;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f0f0f0;
+            color: #007bff;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
         }
 
         h2 {
             text-align: center;
-            color:#8ec5fc  ;
+            color: #333;
+            margin: 30px 0 20px;
         }
 
         .add-link {
             display: block;
-            text-align: center;
-            margin: 20px 0;
-            font-size: 16px;
+            width: fit-content;
+            margin: 0 auto 20px;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #43e97b, #38f9d7);
+            color: white;
             text-decoration: none;
-            color: #007bff;
+            border-radius: 8px;
             font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: background 0.3s ease, transform 0.2s;
         }
 
         .add-link:hover {
-            text-decoration: underline;
+            transform: scale(1.03);
+            opacity: 0.9;
         }
 
-        .table-header,
-        .table-row {
-            display: flex;
-            padding: 18px 24px;
-            border-bottom: 1px solid #eee;
-            align-items: center;
+        table {
+            width: 95%;
+            margin: auto;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
-        .table-header {
-            font-weight: bold;
-            background-color: #e0c3fc  ;
+        th, td {
+            padding: 14px 16px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
         }
 
-        .col {
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-          .col,
-        .col.name {
-            flex: 1;
-        }
-
-        .icon {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            background-color: #007bff;
+        th {
+            background-color: #8ec5fc;
             color: white;
-            font-weight: bold;
-            font-size: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-weight: 600;
         }
 
-        .text {
-            font-size: 15px;
-            color: #333;
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
 
-        .status.available {
-            color: green;
-            font-size: 20px;
+        tr:hover {
+            background-color: #e6f7ff;
         }
 
-        .status.in-use {
-            color: red;
-            font-size: 20px;
-        }
-		.col.action{
-			justify-content:flex-start;
-			gap:12px;
-		}
-
-        .col.action a {
+        a.action-link {
             color: #007bff;
             text-decoration: none;
-            margin-right: 10px;
-            font-weight: 500;
+            font-weight: 600;
+            margin: 0 6px;
         }
 
-        .col.action a:hover {
+        a.action-link:hover {
             text-decoration: underline;
         }
-		.col.action i:hover {
-    transform: scale(1.1);
-    filter: brightness(1.2);
-}
+
+        .delete-btn {
+            color: red !important;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Manage Computers</h2>
-   <!- <a class="add-link" href="add_computer.php">
+<!-- Navbar -->
+<div class="navbar">
+    <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
 
-    <div class="table-header">
-        <div class="col name">Name</div>
-        <div class="col">IP Address</div>
-        <div class="col">Status</div>
-        <div class="col action">Action</div>
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-desktop"></i> Computer <i class="fas fa-caret-down"></i></a>
+        <div class="dropdown-content">
+            <a href="add_computer.php">Add Computer</a>
+            <a href="manage_computers.php">Manage Computers</a>
+        </div>
     </div>
 
-    <?php while ($row = $result->fetch_assoc()) { ?>
-        <div class="table-row">
-            <div class="col name">
-                <div class="text"><?= htmlspecialchars($row['computer_name']) ?></div>
-            </div>
-            <div class="col"><?= htmlspecialchars($row['ip_address']) ?></div>
-            <div class="col status <?= $row['status'] == 'in use' ? 'in-use' : 'available' ?>">
-                <?= ucfirst($row['status']) ?>
-            </div>
-               <div class="col action">
-    <a href="edit_computer.php?id=<?= $row['id'] ?>" title="Edit">
-        <i class="fas fa-edit" style="color: #3498db; cursor: pointer;"></i>
-    </a>
-    <a href="#" class="delete-btn" data-id="<?= $row['id'] ?>" title="Delete">
-        <i class="fas fa-trash-alt" style="color: #e74c3c; cursor: pointer;"></i>
-    </a>
-</div>
-           
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-users"></i> User <i class="fas fa-caret-down"></i></a>
+        <div class="dropdown-content">
+            <a href="add_user.php">Add User</a>
+            <a href="manage_user.php">Manage Users</a>
         </div>
-    <?php } ?>
+    </div>
+
+    <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
+    <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
+    <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
 </div>
+
+<!-- Main Content -->
+<h2>Manage Computers</h2>
+
+<a class="add-link" href="add_computer.php"><i class="fas fa-plus"></i> Add Computer</a>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Computer Name</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    <?php while ($row = $result->fetch_assoc()) { ?>
+    <tr>
+        <td><?= $row['id'] ?></td>
+        <td><?= htmlspecialchars($row['computer_name']) ?></td>
+        <td><?= htmlspecialchars($row['status']) ?></td>
+        <td>
+            <a class="action-link" href="edit_computer.php?id=<?= $row['id'] ?>"><i class="fas fa-edit"></i> Edit</a>
+            <a class="action-link delete-btn" data-id="<?= $row['id'] ?>"><i class="fas fa-trash-alt"></i> Delete</a>
+        </td>
+    </tr>
+    <?php } ?>
+</table>
+
 <script>
 document.querySelectorAll('.delete-btn').forEach(button => {
     button.addEventListener('click', function (e) {
@@ -188,18 +242,17 @@ document.querySelectorAll('.delete-btn').forEach(button => {
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#e74c3c',
-            cancelButtonColor: '#a6c1ee',
+            cancelButtonColor: '#2575fc',
             confirmButtonText: 'Delete',
             cancelButtonText: 'Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
-                window.location.href =' ?delete=${id}';
+                window.location.href = `manage_computers.php?delete=${id}`;
             }
         });
     });
 });
 </script>
-
 
 </body>
 </html>

@@ -49,9 +49,180 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Reuse the styles from add_computer.php */
-        /* ... (same styles as in your existing add_computer.php) ... */
-        /* Paste all CSS from your existing file here */
+        <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+          .navbar {
+    background-color: rgba(255, 255, 255, 0.85);
+    padding: 14px 30px;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #ddd;
+}
+
+.navbar a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.navbar a:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+/* Dropdown styles */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    overflow: hidden;
+    z-index: 999;
+}
+
+.dropdown-content a {
+    padding: 12px 16px;
+    color: #333;
+    display: block;
+    transition: background 0.3s;
+}
+
+.dropdown-content a:hover {
+    background-color: #f0f0f0;
+    color: #007bff;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+        /* Form Container */
+       .form-container {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    padding: 35px 40px;
+    border-radius: 20px;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    max-width: 500px;
+    margin: 60px auto;
+    border: 1px solid rgba(200, 200, 200, 0.3);
+}
+
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #222;
+            font-weight: 600;
+            font-size: 26px;
+        }
+
+        label {
+            font-size: 16px;
+            font-weight: 500;
+            color: #444;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+         input[type="text"],
+select {
+	width:100%;
+	margin-bottom:25px;
+    background: #fdfdfd;
+    border: 1px solid #ccc;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+input:focus,
+select:focus {
+    border-color: #74ebd5;
+    box-shadow: 0 0 10px rgba(116, 235, 213, 0.6);
+    background: #fff;
+}
+
+button {
+    background: linear-gradient(to right, #74ebd5, #ACB6E5);
+    border: none;
+    padding: 14px;
+    border-radius: 10px;
+    width: 100%;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(116, 235, 213, 0.4);
+}
+
+button:hover {
+    background: linear-gradient(to right, #ACB6E5, #74ebd5);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(116, 235, 213, 0.5);
+}
+
+
+        .message {
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        a.back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #555;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a.back-link:hover {
+            color: #007bff;
+        }
     </style>
 </head>
 <body>

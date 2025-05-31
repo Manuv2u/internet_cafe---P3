@@ -1,8 +1,9 @@
-
 <?php
 require 'db_connect.php';
 
 $total_billed = 0;
+$message = '';
+$errors = [];
 
 if (isset($_GET['refresh'])) {
     $start_date = null;
@@ -13,25 +14,35 @@ if (isset($_GET['refresh'])) {
 }
 
 if ($start_date && $end_date) {
-    $sql = "SELECT 
-                u.name AS user_name,
-                u.mobile_number,
-                u.email,
-                c.computer_name,
-                b.start_session,
-                b.end_session,
-                b.duration,
-                b.amount_billed
-            FROM bookings b
-            JOIN user u ON b.user_id = u.id
-            JOIN computers c ON b.computer_name = c.id
-            WHERE DATE(b.start_session) BETWEEN ? AND ?
-            ORDER BY b.start_session DESC";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $start_date, $end_date);
-    $stmt->execute();
-    $result = $stmt->get_result();
-} else {
+    if (strtotime($start_date) > strtotime($end_date)) {
+        $errors[] = "From date cannot be after To date.";
+    } else {
+        $sql = "SELECT 
+                    u.name AS user_name,
+                    u.mobile_number,
+                    u.email,
+                    c.computer_name,
+                    b.start_session,
+                    b.end_session,
+                    b.duration,
+                    b.amount_billed
+                FROM bookings b
+                JOIN user u ON b.user_id = u.id
+                JOIN computers c ON b.computer_name = c.id
+                WHERE DATE(b.start_session) BETWEEN ? AND ?
+                ORDER BY b.start_session DESC";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ss", $start_date, $end_date);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 0) {
+            $message = "No users were booked during the selected period.";
+        }
+    }
+}
+
+if (!isset($result)) {
     $sql = "SELECT 
                 u.name AS user_name,
                 u.mobile_number,
@@ -48,6 +59,7 @@ if ($start_date && $end_date) {
     $result = $conn->query($sql);
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -242,6 +254,18 @@ if ($start_date && $end_date) {
     <button type="submit">Search</button>
     <button type="submit" name="refresh" class="refresh-btn">Refresh</button>
 </form>
+<?php if (!empty($errors)) : ?>
+    <div style="color: red; text-align:center; margin-bottom:15px;">
+        <?php foreach ($errors as $error): ?>
+            <p><?= htmlspecialchars($error) ?></p>
+        <?php endforeach; ?>
+    </div>
+<?php elseif (!empty($message)) : ?>
+    <div style="color: darkorange; text-align:center; margin-bottom:15px;">
+        <p><?= htmlspecialchars($message) ?></p>
+    </div>
+<?php endif; ?>
+
 
 <table>
     <thead>

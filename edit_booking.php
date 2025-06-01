@@ -41,6 +41,7 @@ if(isset($_GET['booking_id'])){
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user_id = $_POST['user_id'];
+    $booking_id = $_POST['booking_id'];
     $computer_id = $_POST['computer_id'];
     $start_session = $_POST['start_session'];
     $end_session = $_POST['end_session'];
@@ -65,13 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("sidi", $end_session,$duration,$amount_billed,$booking_id );
 
         if ($stmt->execute()) {
-            if ($end <= $now) {
-                $conn->query("UPDATE computers SET status = 'available' WHERE id = $computer_id");
-                $message = "Booking recorded. Session ended. Duration: {$duration} mins, Bill: ₹" . number_format($amount_billed, 2);
-            } else {
-                $conn->query("UPDATE computers SET status = 'in use' WHERE id = $computer_id");
-                $message = "Booking recorded. Duration: {$duration} mins, Bill: ₹" . number_format($amount_billed, 2);
-            }
+            $conn->query("UPDATE computers SET status = 'available' WHERE id = $computer_id");
+            $message = "Booking recorded. Session ended. Duration: {$duration} mins, Bill: ₹" . number_format($amount_billed, 2);
         }
     }
 }
@@ -141,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 
 <div class="container">
-    <h2>Edit User Session</h2>
+    <h2>End User Session</h2>
 
     <?php if ($message): ?>
         <div class="<?= strpos($message, 'Error') !== false ? 'info' : 'success' ?>"><?= $message ?></div>
@@ -165,19 +161,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label>Computer Name:</label>
             <label name="computer_name"><?php echo $computer['computer_name'] ?> </label>
 
+            <input type="hidden" name="computer_id" value="<?= $computer_id ?>" ></input>
+
+            <input type="hidden" name="booking_id" value="<?= $booking_id ?>" ></input>
+
             <label>Start Session:</label>
             <input type="datetime-local" readonly="readonly" name="start_session" id="start_session" required onpaste="return false;" value="<?php echo $start_time->format('Y-m-d\TH:i'); ?>">
 
             <label>End Session:</label>
             <input type="datetime-local" name="end_session" id="end_session" required onpaste="return false;">
 
-            <button type="submit">Generate Bill</button>
+            <button type="submit">End Session</button>
         </form>
         </div>
     
     <?php elseif (isset($_GET['search'])): ?>
         <p class="info">No user found matching your search.</p>
     <?php endif; ?>
+
+    <button id="back_button">Back</button>
 </div>
 
 <script>
@@ -192,6 +194,7 @@ window.onload = function () {
     const endInput = document.getElementById('end_session');
 
     endInput.min = iso;
+    endInput.value = iso;
 
     // Adjust endInput min when start changes
     startInput.addEventListener('change', function () {
@@ -205,6 +208,13 @@ window.onload = function () {
     document.querySelectorAll('input[type="datetime-local"]').forEach(input => {
         input.addEventListener('paste', e => e.preventDefault());
     });
+
+    const back = document.getElementById('back_button')
+    back.addEventListener('click', function(){
+        var host =   "http://" + window.location.host;
+        let url = new URL(host+"/p/Booking.php")
+        window.location.href = url.toString()
+    })
 
 
 

@@ -177,7 +177,7 @@ if (isset($_GET['modeSelector']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
             <p><strong>Mobile:</strong> <?= htmlspecialchars($user['mobile_number']) ?></p>
         </div>
 
-        <form action="" method="GET">
+          <form action="" method="GET">
             <label for="appModeSelector" class="block text-lg font-medium text-gray-700 mb-2">
                 Select Mode:
             </label>
@@ -308,7 +308,7 @@ window.onload = function () {
                         console.log(selected_booking);
                         console.log(host)
 
-                        let url = new URL(host+"/p/edit_booking.php")
+                        let url = new URL(host+"/internet_cafe---P3/edit_booking.php")
                         url.searchParams.append('user',user['name'])
                         url.searchParams.append('computer_id',selected_booking['cid'])
                         url.searchParams.append('booking_id',booking_id)

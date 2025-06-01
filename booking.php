@@ -26,10 +26,10 @@ if(isset($_GET['computer_id'])){
     $computer = $stmt->get_result()->fetch_assoc();
 }
 $all_bookings = [];
+$test = "1";
 
 
-
-if (isset($_GET['modeSelector'])) {
+if (isset($_GET['modeSelector']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
     $selected_mode = $_GET['modeSelector'];
     $search = $_GET['user'];
     $stmt = $conn->prepare("SELECT * FROM user WHERE name LIKE ? OR mobile_number LIKE ?");
@@ -41,10 +41,10 @@ if (isset($_GET['modeSelector'])) {
 
     $all_bookings = [];
     $bookings_result = $conn->query("
-        SELECT b.id, u.name as user_name, b.computer_name, b.start_session,c.id as cid
+        SELECT b.id, u.name as user_name, c.computer_name, b.start_session,c.id as cid
         FROM bookings b
         JOIN user u ON b.user_id = u.id 
-        JOIN computers c ON b.computer_name = c.computer_name AND c.status = 'in use' 
+        JOIN computers c ON (b.computer_name = c.computer_name || b.computer_name = c.id) AND c.status = 'in use' AND b.amount_billed = 0
         ORDER BY b.start_session ASC
     ");
     if ($bookings_result) {
@@ -59,34 +59,40 @@ if (isset($_GET['modeSelector'])) {
     $user_id = $_POST['user_id'];
     $computer_id = $_POST['computer_id'];
     $start_session = $_POST['start_session'];
-    $end_session = $_POST['end_session'];
+    //$end_session = $_POST['end_session'];
 
     $start = new DateTime($start_session);
-    $end = new DateTime($end_session);
+    $end = new DateTime($start_session);
     $now = new DateTime();
 
-    if ($end <= $start) {
-        $message = "Error: End session must be after start session.";
-    } else {
+    // if ($end <= $start) {
+    //     $test = "3";
+    //     $message = "Error: End session must be after start session.";
+    // } else {
+        $test = "4";
         $interval = $start->diff($end);
         $duration = ($interval->days * 24 * 60) + ($interval->h * 60) + $interval->i;
 
         $rate_per_minute = 1.50;
         $amount_billed = $duration * $rate_per_minute;
 
+        $stmt = $conn->prepare("SELECT * FROM computers WHERE id = ?");
+        $stmt->bind_param("i", $computer_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $computer = $result->fetch_assoc();
+        $amount_billed = 0;
+        $duration = 0;
+
         $stmt = $conn->prepare("INSERT INTO bookings (user_id, computer_name, start_session, end_session, duration, amount_billed) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("iissid", $user_id, $computer_id, $start_session, $end_session, $duration, $amount_billed);
+        $stmt->bind_param("iissid", $user_id, $computer_id, $start_session, $start_session, $duration, $amount_billed);
 
         if ($stmt->execute()) {
-            if ($end <= $now) {
-                $conn->query("UPDATE computers SET status = 'available' WHERE id = $computer_id");
-                $message = "Booking recorded. Session ended. Duration: {$duration} mins, Bill: ₹" . number_format($amount_billed, 2);
-            } else {
+                $test = "6";
                 $conn->query("UPDATE computers SET status = 'in use' WHERE id = $computer_id");
-                $message = "Booking recorded. Duration: {$duration} mins, Bill: ₹" . number_format($amount_billed, 2);
-            }
+                $message = "Booking session started";
         }
-    }
+   // }
 }
 ?>
 
@@ -200,10 +206,10 @@ if (isset($_GET['modeSelector'])) {
             <label>Start Session:</label>
             <input type="datetime-local" name="start_session" id="start_session" required onpaste="return false;">
 
-            <label>End Session:</label>
-            <input type="datetime-local" name="end_session" id="end_session" required onpaste="return false;">
+            <!-- <label>End Session:</label>
+            <input type="datetime-local" name="end_session" id="end_session" required onpaste="return false;"> -->
 
-            <button type="submit">Generate Bill</button>
+            <button type="submit">Start Session</button>
         </form>
         </div>
 
@@ -260,19 +266,19 @@ window.onload = function () {
     const iso = now.toLocaleString('sv').replace(' ', 'T').slice(0, 16); 
 
     const startInput = document.getElementById('start_session');
-    const endInput = document.getElementById('end_session');
+    //const endInput = document.getElementById('end_session');
 
     startInput.min = iso;
-    endInput.min = iso;
+    //endInput.min = iso;
     startInput.value = iso;
 
     // Adjust endInput min when start changes
-    startInput.addEventListener('change', function () {
-        endInput.min = this.value;
-        if (endInput.value < this.value) {
-            endInput.value = this.value;
-        }
-    });
+    // startInput.addEventListener('change', function () {
+    //     endInput.min = this.value;
+    //     if (endInput.value < this.value) {
+    //         endInput.value = this.value;
+    //     }
+    // });
 
     // Disable paste
     document.querySelectorAll('input[type="datetime-local"]').forEach(input => {

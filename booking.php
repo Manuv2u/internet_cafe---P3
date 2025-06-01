@@ -308,7 +308,7 @@ window.onload = function () {
                         console.log(selected_booking);
                         console.log(host)
 
-                        let url = new URL(host+"/p/edit_booking.php")
+                        let url = new URL(host+"/internet_cafe---P3/edit_booking.php")
                         url.searchParams.append('user',user['name'])
                         url.searchParams.append('computer_id',selected_booking['cid'])
                         url.searchParams.append('booking_id',booking_id)

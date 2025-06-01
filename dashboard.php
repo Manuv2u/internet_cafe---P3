@@ -345,7 +345,7 @@ if (!isset($_SESSION['user_id'])) {
         <li><a class="dropdown-item" href="manage_user.php">Manage User</a></li>
         <li><a class="dropdown-item" href="old_user.php">Old User</a></li>
       </ul>
-    </li>
+    
     <li><a href="Booking.php"><i class="fa-solid fa-window-maximize"></i> Booking</a></li>
     <li><a href="search_user.php"><i class="fas fa-search"></i> Search</a></li>
     <li><a href="generate_report.php"><i class="fas fa-chart-bar"></i> Reports</a></li>

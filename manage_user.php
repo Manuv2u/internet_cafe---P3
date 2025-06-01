@@ -5,6 +5,11 @@ require 'db_connect.php';
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']); // ensure ID is an integer
 
+
+    $stmt = $conn->prepare('DELETE FROM bookings WHERE user_id = ?');
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+
     $stmt = $conn->prepare("DELETE FROM user WHERE id = ?");
     $stmt->bind_param("i", $id);
     if ($stmt->execute()) {
@@ -138,7 +143,7 @@ document.querySelectorAll('.delete-btn').forEach(button => {
 
         Swal.fire({
             title: 'Are you sure?',
-            text: "Do you really want to delete this user?",
+            text: "Do you really want to delete this user?The User and his bookings will be deleted.",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#e74c3c',

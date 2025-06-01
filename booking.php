@@ -177,7 +177,7 @@ if (isset($_GET['modeSelector']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
             <p><strong>Mobile:</strong> <?= htmlspecialchars($user['mobile_number']) ?></p>
         </div>
 
-        <form action="" method="GET">
+          <form action="" method="GET">
             <label for="appModeSelector" class="block text-lg font-medium text-gray-700 mb-2">
                 Select Mode:
             </label>

@@ -1,4 +1,3 @@
-
 <?php
 require 'db_connect.php';
 
@@ -203,7 +202,7 @@ button:hover {
         }
     </style>
 </head>
-<body></body>
+<body>
 
 <!-- Navbar -->
 <div class="navbar">

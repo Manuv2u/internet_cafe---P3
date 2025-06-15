@@ -2,12 +2,12 @@
 require 'db_connect.php';
 
 if (!isset($_GET['id'])) {
-    die("User ID is missing.");
+    die("No user ID specified.");
 }
 
-$id = $_GET['id'];
+$id = intval($_GET['id']);
 
-// Fetch current user
+// Fetch user data
 $stmt = $conn->prepare("SELECT * FROM user WHERE id = ?");
 $stmt->bind_param("i", $id);
 $stmt->execute();
@@ -25,13 +25,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Server-side validation
     if (!preg_match("/^([A-Z][a-z]+)( [A-Z][a-z]+)*$/", $name)) {
-        $message = "Each word in the name must start with a capital letter and contain no numbers.";
+        $message = "Each word in the name must start with a capital letter.";
+    } elseif (strlen($address) < 10) {
+        $message = "Address must be at least 10 characters long.";
     } elseif (!preg_match("/^[6789][0-9]{9}$/", $mobile_number)) {
-        $message = "Mobile number must start with 6, 7, 8, or 9 and be 10 digits long.";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message = "Invalid email format.";
+        $message = "Mobile number must start with 6, 7, 8, or 9 and be 10 digits.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) || !str_ends_with($email, '@gmail.com')) {
+        $message = "Email must be a valid Gmail address.";
     } else {
-        // Check for duplicate mobile/email (excluding current user)
         $check = $conn->prepare("SELECT id FROM user WHERE (mobile_number=? OR email=?) AND id != ?");
         $check->bind_param("ssi", $mobile_number, $email, $id);
         $check->execute();
@@ -42,9 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $update = $conn->prepare("UPDATE user SET name=?, address=?, mobile_number=?, email=? WHERE id=?");
             $update->bind_param("ssssi", $name, $address, $mobile_number, $email, $id);
             if ($update->execute()) {
-                $message = "User updated successfully!";
-                // Optionally redirect
-                // header("Location: manage_user.php");
+                $message = "✅ User updated successfully!";
+                $user = ['name' => $name, 'address' => $address, 'mobile_number' => $mobile_number, 'email' => $email];
             } else {
                 $message = "Update failed: " . $update->error;
             }
@@ -58,84 +58,50 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <title>Edit User</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <script>
-        function validateForm() {
-            const name = document.forms[0]["name"].value.trim();
-            const mobile = document.forms[0]["mobile_number"].value.trim();
-            const email = document.forms[0]["email"].value.trim();
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-            const nameRegex = /^([A-Z][a-z]+)( [A-Z][a-z]+)*$/;
-            const mobileRegex = /^[6789][0-9]{9}$/;
-            const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-
-            let error = "";
-
-            if (!nameRegex.test(name)) {
-                error += "- Name must have each word start with a capital letter and contain no numbers.\n";
-            }
-            if (!mobileRegex.test(mobile)) {
-                error += "- Mobile number must start with 6, 7, 8, or 9 and be 10 digits.\n";
-            }
-            if (!emailRegex.test(email)) {
-                error += "- Email must be valid and contain letters, numbers, and special characters.\n";
-            }
-
-            if (error !== "") {
-                alert("Please fix the following:\n" + error);
-                return false;
-            }
-            return true;
-        }
-
-        // Auto-capitalize name input
-        function capitalizeName(input) {
-            input.value = input.value
-                .toLowerCase()
-                .split(' ')
-                .filter(w => w.length > 0)
-                .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-                .join(' ');
-        }
-    </script>
     <style>
-        /* same styling as your original CSS — keep as-is */
-        /* Include styling from your previous code here */
+      * {
+            box-sizing: border-box;
+        }   
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
             min-height: 100vh;
             margin: 0;
         }
+     .navbar {
+    background-color: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;         /* Vertically center items */
+    justify-content: flex-start; /* Keep items left-aligned */
+    gap: 24px;
+    padding: 6px 16px;           /* Reduce top-bottom space */
+    height: 50px;                /* Fix a compact height */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #ccc;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
 
-        .navbar {
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 14px 30px;
-            display: flex;
-            align-items: center;
-            gap: 25px;
-            flex-wrap: wrap;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid #ddd;
-        }
+.navbar a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #333;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
 
-        .navbar a {
-            color: #333;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 10px 16px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
+.navbar a:hover {
+    background-color: #f2f2f2;
+}
 
-        .navbar a:hover {
-            background-color: rgba(0, 123, 255, 0.1);
-            color: #007bff;
-        }
-        /* Dropdown styles */
 .dropdown {
     position: relative;
 }
@@ -145,31 +111,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    min-width: 180px;
-    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    min-width: 140px;
     z-index: 999;
-}
-
-.dropdown-content a {
-    padding: 12px 16px;
-    color: #333;
-    display: block;
-    transition: background 0.3s;
-}
-
-.dropdown-content a:hover {
-    background-color: #f0f0f0;
-    color: #007bff;
 }
 
 .dropdown:hover .dropdown-content {
     display: block;
 }
 
+.dropdown-content a {
+    display: block;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #333;
+    text-decoration: none;
+}
 
+.dropdown-content a:hover {
+    background-color: #f0f0f0;
+}
         .form-container {
             background: #ffffff;
             padding: 40px 35px;
@@ -179,31 +142,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             max-width: 500px;
             margin: 50px auto;
         }
-
         h2 {
             text-align: center;
             color: #333;
             font-weight: bold;
         }
-
-        form input,
-        form textarea {
+        form input, form textarea {
             width: 100%;
             padding: 12px;
             margin-top: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             border-radius: 8px;
             border: 1px solid #ccc;
             font-size: 15px;
         }
-
-        form input:focus,
-        form textarea:focus {
+        form input:focus, form textarea:focus {
             border-color: #74ebd5;
             outline: none;
             box-shadow: 0 0 8px rgba(116, 235, 213, 0.5);
         }
-
         button {
             background: linear-gradient(to right, #74ebd5, #ACB6E5);
             border: none;
@@ -214,18 +171,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
+            margin-top: 20px;
         }
-
         button:hover {
             background: linear-gradient(to right, #ACB6E5, #74ebd5);
         }
-
         p {
             text-align: center;
             color: green;
             font-weight: bold;
         }
-
         a {
             display: block;
             text-align: center;
@@ -233,54 +188,119 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             font-weight: bold;
             color: #007bff;
         }
+        .error-message {
+            color: red;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
 <!-- Navbar -->
 <div class="navbar">
-    <a href="dashboard.php">Dashboard</a>
+    <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
     <div class="dropdown">
-        <a href="#">Computer</a>
+        <a href="#"><i class="fas fa-desktop"></i> Computer <i class="fas fa-caret-down"></i></a>
         <div class="dropdown-content">
             <a href="add_computer.php">Add Computer</a>
             <a href="manage_computers.php">Manage Computers</a>
         </div>
     </div>
     <div class="dropdown">
-        <a href="#">User</a>
+        <a href="#"><i class="fas fa-users"></i> User <i class="fas fa-caret-down"></i></a>
         <div class="dropdown-content">
             <a href="add_user.php">Add User</a>
             <a href="manage_user.php">Manage Users</a>
         </div>
     </div>
-    <a href="booking.php">Bookings</a>
-    <a href="search_user.php">Search</a>
-    <a href="generate_report.php">Reports</a>
+    <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
+    <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
+    <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
 </div>
-
 <div class="form-container">
     <h2>Edit User</h2>
     <?php if (!empty($message)) echo "<p>$message</p>"; ?>
-
-    <form method="POST" onsubmit="return validateForm();">
+    <form method="POST">
         <label>Name:</label>
-        <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" required onblur="capitalizeName(this)">
+        <input type="text" name="name" value="<?= htmlspecialchars($user['name']) ?>" required>
+        <div class="error-message" id="nameError"></div>
 
         <label>Address:</label>
         <textarea name="address" required><?= htmlspecialchars($user['address']) ?></textarea>
+        <div class="error-message" id="addressError"></div>
 
         <label>Mobile Number:</label>
         <input type="text" name="mobile_number" value="<?= htmlspecialchars($user['mobile_number']) ?>" required>
+        <div class="error-message" id="mobileError"></div>
 
         <label>Email:</label>
         <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" required>
+        <div class="error-message" id="emailError"></div>
 
         <button type="submit">Update</button>
     </form>
-
     <a href="manage_user.php">Back to User List</a>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const name = document.querySelector('input[name="name"]');
+    const address = document.querySelector('textarea[name="address"]');
+    const mobile = document.querySelector('input[name="mobile_number"]');
+    const email = document.querySelector('input[name="email"]');
+
+    const nameErr = document.getElementById("nameError");
+    const addressErr = document.getElementById("addressError");
+    const mobileErr = document.getElementById("mobileError");
+    const emailErr = document.getElementById("emailError");
+
+    function validateName() {
+        const value = name.value.trim();
+        const regex = /^([A-Z][a-z]+)( [A-Z][a-z]+)*$/;
+        nameErr.textContent = regex.test(value) ? "" : "Each word must start with capital letter.";
+    }
+
+    function validateAddress() {
+        addressErr.textContent = address.value.trim().length < 10 ? "Address must be at least 10 characters." : "";
+    }
+
+    function validateMobile() {
+        const regex = /^[6789]\d{9}$/;
+        mobileErr.textContent = regex.test(mobile.value.trim()) ? "" : "Must be 10 digits starting with 6-9.";
+    }
+
+    function validateEmail() {
+        const value = email.value.trim();
+        emailErr.textContent = (!value.endsWith("@gmail.com") || value.indexOf("@") <= 0) ? "Use a valid Gmail address." : "";
+    }
+
+    name.addEventListener("input", validateName);
+    address.addEventListener("input", validateAddress);
+    mobile.addEventListener("input", validateMobile);
+    email.addEventListener("input", validateEmail);
+
+    name.addEventListener("blur", () => {
+        name.value = name.value
+            .toLowerCase()
+            .split(' ')
+            .filter(word => word)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        validateName();
+    });
+
+    document.querySelector("form").addEventListener("submit", (e) => {
+        validateName();
+        validateAddress();
+        validateMobile();
+        validateEmail();
+        if (nameErr.textContent || addressErr.textContent || mobileErr.textContent || emailErr.textContent) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
 
 </body>
 </html>

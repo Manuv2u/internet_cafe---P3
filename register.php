@@ -95,19 +95,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       color: #ccc;
     }
 
-    .input-group input {
-      width: 100%;
-      padding: 12px 12px 12px 42px;
-      border-radius: 10px;
-      border: 1px solid black;
-      background: rgba(255, 255, 255, 0.1);
-      color: black;
-      transition: 0.3s ease;
-    }
 
-    .input-group input::placeholder {
-      color: black;
-    }
+	.input-group input {
+  width: 100%;
+  padding: 12px 12px 12px 42px;
+  border-radius: 10px !important;           /* Uniform border-radius */
+  border: 1px solid #666666;      
+  background: rgba(255, 255, 255, 0.1);
+  color: black;                  
+  transition: 0.3s ease;
+}
+
+.input-group input::placeholder {
+  color: #666666;                  
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: white;           /* Keep white border on focus */
+  background: rgba(255, 255, 255, 0.2);
+}
+
 
     .input-group input:focus {
       outline: none;
@@ -171,7 +179,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <a href="login.php" class="btn btn-outline-light">Login</a>
 </div>
 
-<?php if (!empty($message)) echo "<div style='position:absolute; top:100px; text-align:center; width:100%;'>" . $message . "</div>"; ?>
+<?php if (!empty($message)) echo "<div style='position:absolute; top:120px; text-align:center; width:100%;'>" . $message . "</div>"; ?>
 
 <form class="glass-form" method="POST" action="" onsubmit="return validateForm();">
   <h2>Register</h2>
@@ -193,7 +201,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <i class="fa fa-lock"></i>
     <input type="password" name="password" id="password" placeholder="Password" oninput="validatePassword()" required>
   </div>
-  <div id="passwordError" style="color: black; font-size: 14px; margin-top: -10px; margin-bottom: 15px;"></div>
+  <div id="passwordError" style="color: red; font-size: 14px; margin-top: -10px; margin-bottom: 15px;"></div>
 
   <input type="submit" value="Register" id="registerBtn" disabled>
 

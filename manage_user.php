@@ -32,17 +32,18 @@ $result = $conn->query($sql);
     * { box-sizing: border-box; }
     body {
         font-family: 'Poppins', sans-serif;
-        background: linear-gradient(135deg, #e0c3fc, #8ec5fc 100%);
+        background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
         margin: 0;
-        padding: 20px;
+        /* padding: 20px; */
     }
     h2 {
         text-align: center;
         color: #333;
         margin-bottom: 20px;
+        margin-top: 3%0px;
     }
             /* Navbar */
-          .navbar {
+         .navbar {
     background-color: rgba(255, 255, 255, 0.85);
     padding: 14px 30px;
     display: flex;
@@ -198,7 +199,7 @@ $result = $conn->query($sql);
         <th>Name</th>
         <th>Email</th>
         <th>Address</th>
-        <th>Mobile Number</th>
+         <th>Mobile Number</th> 
         <th>Actions</th>
     </tr>
     <?php while ($row = $result->fetch_assoc()) { ?>

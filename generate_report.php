@@ -64,31 +64,42 @@ if (!isset($result)) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
 	 * {
             box-sizing: border-box;
         }
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #e0c3fc, #8ec5fc 100%);
-            padding: 30px;
+            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
+        }
+        main{
+            padding: 10px 20px;
+            margin-top : 60px;
         }
 		.navbar {
-            background-color:  rgba(255, 255, 255, 0.85) ;
-            padding: 12px 25px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 14px 30px;
             display: flex;
             align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
+            gap: 30px;
+            z-index: 999;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .navbar a {
-            color: #333;
+          color:   #333;
             text-decoration: none;
             font-weight: 500;
             padding: 8px 12px;
@@ -170,8 +181,8 @@ if (!isset($result)) {
         }
 
         table {
-            width: 100%;
-            max-width: 1100px;
+            width: 90%;
+            
             margin: auto;
             border-collapse: collapse;
             background: #fff;
@@ -187,7 +198,7 @@ if (!isset($result)) {
         }
 
         th {
-            background-color: #6a11cb;
+            background-color: #8ec5fc;
             background-image:  #007bff;
             color: white;
         }
@@ -243,7 +254,7 @@ if (!isset($result)) {
     <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
     <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
 </div>
-
+<main>
 <h2> Report</h2>
 
 <form method="GET" action="">
@@ -348,6 +359,6 @@ if (!isset($result)) {
         doc.save("booking_report.pdf");
     }
 </script>
-
+</main>
 </body>
 </html>

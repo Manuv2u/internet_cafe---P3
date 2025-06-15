@@ -77,15 +77,83 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html>
 <head>
     <title>Edit Session</title>
+     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
             padding: 40px;
         }
+         /* Navbar */
+          .navbar {
+         position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 14px 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.navbar a:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+/* Dropdown styles */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    overflow: hidden;
+    z-index: 999;
+}
+
+.dropdown-content a {
+    padding: 12px 16px;
+    color: #333;
+    display: block;
+    transition: background 0.3s;
+}
+
+.dropdown-content a:hover {
+    background-color: #f0f0f0;
+    color: #007bff;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
         .container {
             max-width: 600px;
-            margin: auto;
+            margin: 40px auto 0 auto;
             background: white;
             padding: 30px;
             border-radius: 15px;
@@ -135,6 +203,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+<div class="navbar">
+    <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
+
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-desktop"></i> Computer <i class="fas fa-caret-down"></i></a>
+        <div class="dropdown-content">
+            <a href="add_computer.php">Add Computer</a>
+            <a href="manage_computers.php">Manage Computers</a>
+        </div>
+    </div>
+
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-users"></i> User <i class="fas fa-caret-down"></i></a>
+        <div class="dropdown-content">
+            <a href="add_user.php">Add User</a>
+            <a href="manage_user.php">Manage Users</a>
+        </div>
+    </div>
+        <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
+    <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
+    <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
+</div>
 
 <div class="container">
     <h2>End User Session</h2>

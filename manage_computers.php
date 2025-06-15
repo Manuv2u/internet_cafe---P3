@@ -35,7 +35,7 @@ $result = $conn->query($sql);
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #e0c3fc, #8ec5fc 100%);
+            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
             margin: 0;
             padding: 0;
         }
@@ -235,12 +235,22 @@ $result = $conn->query($sql);
         <td><?= htmlspecialchars($row['computer_name']) ?></td>
         <td><?= htmlspecialchars($row['ip_address']) ?></td>
         <td class="<?= $row['status'] === 'in use' ? 'status-in-use' : 'status-available' ?>">
-            <?= htmlspecialchars(ucwords($row['status'])) ?>
-        </td>
+             <?= htmlspecialchars(ucwords($row['status'])) ?> 
+         </td>
         <td>
             <a class="action-link" href="edit_computer.php?id=<?= $row['id'] ?>"><i class="fas fa-edit"></i> Edit</a>
-            <a class="action-link delete-btn" data-id="<?= $row['id'] ?>"><i class="fas fa-trash-alt"></i> Delete</a>
-        </td>
+            <!-- <a class="action-link delete-btn" data-id="<?= $row['id'] ?>"><i class="fas fa-trash-alt"></i> Delete</a> -->
+                      <?php if ($row['status'] === 'in use' || $row['status'] === 'booked'): ?>
+        <a class="action-link delete-btn disabled" style="pointer-events: none; opacity: 0.5;" title="Cannot delete while in use or booked">
+            <i class="fas fa-trash-alt"></i> Delete
+        </a>
+    <?php else: ?>
+        <a class="action-link delete-btn" data-id="<?= $row['id'] ?>">
+            <i class="fas fa-trash-alt"></i> Delete
+        </a>
+    <?php endif; ?>
+        </td> 
+
     </tr>
     <?php } ?>
 </table>

@@ -9,9 +9,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!filter_var($ip, FILTER_VALIDATE_IP)) {
         $message = "❌ Invalid IP address format.";
     } else {
-        $stmt = $conn->prepare("INSERT INTO computers (computer_name, ip_address, status) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $name, $ip, $status);
-        $message = $stmt->execute() ? "✅ Computer added successfully!" : "❌ Error adding computer.";
+        // Check if IP already exists
+        $checkStmt = $conn->prepare("SELECT id FROM computers WHERE ip_address = ?");
+        $checkStmt->bind_param("s", $ip);
+        $checkStmt->execute();
+        $checkStmt->store_result();
+
+        if ($checkStmt->num_rows > 0) {
+            $message = "❌ Computer with this IP address already exists.";
+        } else {
+            // Proceed to insert
+            $stmt = $conn->prepare("INSERT INTO computers (computer_name, ip_address, status) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $name, $ip, $status);
+            $message = $stmt->execute() ? "✅ Computer added successfully!" : "❌ Error adding computer.";
+        }
+
+        $checkStmt->close();
     }
 }
 ?>

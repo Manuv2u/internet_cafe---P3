@@ -240,6 +240,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <button type="submit">Add User</button>
         </form>
     </div>
+
+
 </div>
 
 <!-- JavaScript -->

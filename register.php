@@ -142,6 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
+<?php include 'header.php'; ?>
 <div class="register-container">
     <h2>Create Your Account</h2>
     <?php echo $message; ?>

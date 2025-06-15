@@ -5,17 +5,14 @@ require 'db_connect.php';
 $error = ""; // To store error messages
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Sanitize input
     $username = trim($_POST['username']);
     $password = $_POST['password'];
 
-    // Basic server-side validation
     if (empty($username) || empty($password)) {
         $error = "Username and password are required.";
     } elseif (!preg_match("/^[A-Za-z]+$/", $username)) {
         $error = "Username must contain only alphabets (A–Z or a–z).";
     } else {
-        // Check if user exists in the database
         $stmt = $conn->prepare("SELECT id, password FROM users WHERE username = ?");
         $stmt->bind_param("s", $username);
         $stmt->execute();
@@ -23,19 +20,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user = $res->fetch_assoc();
 
         if ($user && password_verify($password, $user['password'])) {
-            // Login successful – start session
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $username;
-
-            // Record login time
             $login_time = date('Y-m-d H:i:s');
             $insert = $conn->prepare("INSERT INTO sessions (user_id, login_time) VALUES (?, ?)");
             $insert->bind_param("is", $user['id'], $login_time);
             $insert->execute();
-
             $_SESSION['session_id'] = $conn->insert_id;
-
-            // Redirect to dashboard
             header("Location: dashboard.php");
             exit();
         } else {
@@ -49,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Login - Internet Cafe Shop</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         * {
@@ -60,180 +51,181 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin: 0;
             padding: 0;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
+            background: url('register.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .login-container {
-            background: white;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 16px;
-            padding: 40px 30px;
-            width: 100%;
-            max-width: 400px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            color: #fff;
+        .left-panel {
+            background: url('https://cdn.pixabay.com/photo/2017/10/10/21/47/laptop-2838921_1280.jpg') no-repeat center center/cover;
+        }
+
+        .main-wrapper {
+            width: 400px;
+            padding: 40px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .right-panel h2 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #333;
             text-align: center;
         }
 
-        .login-container h2 {
-            font-size: 28px;
-            margin-bottom: 25px;
-            font-weight: 700;
-            background:black;
-            background-clip: text;
-           -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .logo img {
+            height: 60px;
         }
 
         .input-group {
             position: relative;
-            margin-bottom: 10px;
-            height: 44px;
+            margin-bottom: 15px;
         }
 
         .input-group i {
             position: absolute;
-            left: 15px;
             top: 50%;
+            left: 12px;
             transform: translateY(-50%);
-            color: #ccc;
-            font-size: 16px;
-            pointer-events: none;
+            color: #999;
         }
 
         .input-group input {
             width: 100%;
-            height : 100%;
             padding: 12px 12px 12px 40px;
-            line-height :1.5;
-            border-radius: 10px;
             border: 1px solid #ccc;
-            background: #f9f9f9;
-            color: #000;
+            border-radius: 8px;
             font-size: 15px;
-            transition: 0.3s ease;
-            box-sizing : border-box;
         }
 
         .input-group input:focus {
             outline: none;
-            border-color: #ff9a9e;
-            background: #f9f9f9;
-        }
-        .error-message {
-            color: red;
-            font-size : 13px;
-             margin :4px 0 12px 5px; 
-            text-align :left;
-            padding-left :10px;
-            /* min-height :16px; */
+            border-color: #2563eb;
         }
 
-        button[type="submit"] {
-            width: 100%;
+        .error-message {
+            color: red;
+            font-size: 13px;
+            margin: 4px 0 12px 5px;
+            text-align: left;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .button-group button,
+        .button-group a button {
+            flex: 1;
             padding: 12px;
-            background: #2575fc;
-            color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
-            transition: background 0.3s ease;
-            margin-top:10px;
         }
 
-        button[type="submit"]:hover {
-            background: linear-gradient(to right, #ff6a00, #ee0979);
+        #loginBtn {
+            background: #2563eb;
+            color: white;
         }
 
-        /* .error-message { 
-            color: #ff4d4d;
-            font-size: 14px;
-            margin-bottom: 15px;
-        /* } */
+        #loginBtn:hover {
+            background: #1e40af;
+        }
 
-        .input-group div {
-            margin-top: 4px;
-            padding-left :5px;
-            font-size: 13px;
-            color:red !important;
-            text-align: left;
-            position : relative;
+        .register-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .register-btn:hover {
+            background: #059669;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <?php if (isset($error)) echo "<div class='error-message'>" . htmlspecialchars($error) . "</div>"; ?>
-        <h2>Login</h2>
-        <form method="POST" action="" onsubmit="return validateForm()">
-            <div class="input-group">
-                <i class="fa fa-user"></i>
-                <input type="text" id="username" name="username" placeholder="Username" required>
-                </div>
-                <div id="usernameError" 
-                class="error-message"></div>
-            <div class="input-group">
-                <i class="fa fa-lock"></i>
-                <input type="password" id="password" name="password" placeholder="Password" required>
-                </div>
-                <div id="passwordError" 
-                class="error-message">
-            </div>
-            <button type="submit" id="loginBtn" disabled>Login</button>
-        </form>
+<div class="main-wrapper right-panel">
+    <div class="logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/888/888879.png" alt="Logo">
     </div>
+    <h2>Login to Internet Cafe Shop</h2>
+    <?php if (!empty($error)) echo "<div class='error-message'>" . htmlspecialchars($error) . "</div>"; ?>
+    <form method="POST" action="" onsubmit="return validateForm()">
+        <div class="input-group">
+            <i class="fa fa-user"></i>
+            <input type="text" id="username" name="username" placeholder="Username" required>
+        </div>
+        <div id="usernameError" class="error-message"></div>
 
-   <script>
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
-const loginBtn = document.getElementById("loginBtn");
+        <div class="input-group">
+            <i class="fa fa-lock"></i>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+        </div>
+        <div id="passwordError" class="error-message"></div>
 
-const usernameError = document.getElementById("usernameError");
-const passwordError = document.getElementById("passwordError");
+        <div class="button-group">
+            <button type="submit" id="loginBtn" disabled>Login</button>
+            <a href="register.php">
+                <button type="button" class="register-btn">Register</button>
+            </a>
+        </div>
+    </form>
+</div>
 
-function validateForm() {
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
-    let isValid = true;
+<script>
+    const usernameInput = document.getElementById("username");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
 
-    // Username validation
-    if (username === "") {
-        usernameError.textContent = "Username is required.";
-        isValid = false;
-    } else if (!/^[A-Za-z]+$/.test(username)) {
-        usernameError.textContent = "Only alphabets are allowed in username.";
-        isValid = false;
-    } else {
-        usernameError.textContent = "";
+    const usernameError = document.getElementById("usernameError");
+    const passwordError = document.getElementById("passwordError");
+
+    function validateForm() {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        let isValid = true;
+
+        if (username === "") {
+            usernameError.textContent = "Username is required.";
+            isValid = false;
+        } else if (!/^[A-Za-z]+$/.test(username)) {
+            usernameError.textContent = "Only alphabets are allowed in username.";
+            isValid = false;
+        } else {
+            usernameError.textContent = "";
+        }
+
+        if (password === "") {
+            passwordError.textContent = "Password is required.";
+            isValid = false;
+        } else if (password.length < 6) {
+            passwordError.textContent = "Password must be at least 6 characters.";
+            isValid = false;
+        } else {
+            passwordError.textContent = "";
+        }
+
+        loginBtn.disabled = !isValid;
+        return isValid;
     }
 
-    // Password validation
-    if (password === "") {
-        passwordError.textContent = "Password is required.";
-        isValid = false;
-    } else if (password.length < 6) {
-        passwordError.textContent = "Password must be at least 6 characters.";
-        isValid = false;
-    } else {
-        passwordError.textContent = "";
-    }
-
-    loginBtn.disabled = !isValid;
-    return isValid;
-}
-
-usernameInput.addEventListener("input", validateForm);
-passwordInput.addEventListener("input", validateForm);
-
-loginBtn.disabled = true;
+    usernameInput.addEventListener("input", validateForm);
+    passwordInput.addEventListener("input", validateForm);
 </script>
-
 </body>
 </html>

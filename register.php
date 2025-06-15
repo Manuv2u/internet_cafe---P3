@@ -1,294 +1,199 @@
 <?php
 require 'db_connect.php';
-
 $message = "";
 
-// Server-side validation and registration
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
-    // Basic validation
     if (empty($username) || empty($email) || empty($password)) {
-        $message = "<p style='color:red;'>All fields are required.</p>";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message = "<p style='color:red;'>Invalid email format.</p>";
-    } elseif (strlen($password) < 6) {
-        $message = "<p style='color:red;'>Password must be at least 6 characters.</p>";
-    } elseif (preg_match('/\d/', $username)) {
-        $message = "<p style='color:red;'>Username must not contain numbers.</p>";
+        $message = "<div class='alert alert-danger'>All fields are required.</div>";
+    } elseif (!preg_match("/^[A-Za-z]+$/", $username)) {
+        $message = "<div class='alert alert-danger'>Username must contain only alphabets.</div>";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) || !str_ends_with($email, '@gmail.com')) {
+        $message = "<div class='alert alert-danger'>Only valid @gmail.com addresses are allowed.</div>";
     } else {
-        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->store_result();
 
-        if ($result->num_rows > 0) {
-            $message = "<p style='color:red;'>Email already registered.</p>";
+        if ($stmt->num_rows > 0) {
+            $message = "<div class='alert alert-danger'>Email already registered.</div>";
         } else {
-            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $insert = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
-            $insert->bind_param("sss", $username, $email, $hashed_password);
+            $insert->bind_param("sss", $username, $email, $hashedPassword);
 
             if ($insert->execute()) {
-                $message = "<p style='color:green;'>Registration successful!</p>";
+                $message = "<div class='alert alert-success'>Registration successful. <a href='login.php'>Login here</a>.</div>";
             } else {
-                $message = "<p style='color:red;'>Registration failed. Try again.</p>";
+                $message = "<div class='alert alert-danger'>Registration failed. Please try again later.</div>";
             }
         }
     }
 }
 ?>
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
-  <style>
-    body {
+    <meta charset="UTF-8">
+    <title>Register - Internet Cafe Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body {
             margin: 0;
             padding: 0;
             height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
+            background: url('register.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-         .glass-form {
-  background: white;
-  border-radius: 20px;
-  padding: 40px 30px;
-  width: 100%;
-  max-width: 400px;
-  color: black;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-  border: 1px solid #ddd;
-}
 
+        .register-container {
+            width: 400px;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
 
-    .glass-form h2 {
-      text-align: center;
-      margin-bottom: 30px; 
-      font-weight: 800;
-      font-size: 30px;
-      color: black;
-    }
+        .register-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
 
-    .input-group {
-      position: relative;
-      margin-bottom: 20px;
-    }
+        .input-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
 
-    .input-group i {
-      position: absolute;
-      top: 50%;
-      left: 15px;
-      transform: translateY(-50%);
-      color: #ccc;
-    }
+        .input-group i {
+            position: absolute;
+            top: 50%;
+            left: 12px;
+            transform: translateY(-50%);
+            color: #999;
+        }
 
+        .input-group input {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+        }
 
-	.input-group input {
-  width: 100%;
-  padding: 12px 12px 12px 42px;
-  border-radius: 10px !important;           /* Uniform border-radius */
-  border: 1px solid #666666;      
-  background: rgba(255, 255, 255, 0.1);
-  color: black;                  
-  transition: 0.3s ease;
-}
+        .input-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
 
-.input-group input::placeholder {
-  color: #666666;                  
-}
+        .alert {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
 
-.input-group input:focus {
-  outline: none;
-  border-color: white;           /* Keep white border on focus */
-  background: rgba(255, 255, 255, 0.2);
-}
+        .alert-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
 
+        .alert-success {
+            background: #dcfce7;
+            color: #15803d;
+        }
 
-    .input-group input:focus {
-      outline: none;
-      border-color: #4eaaff;
-      background: rgba(255, 255, 255, 0.2);
-    }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
 
-    .glass-form input[type="submit"] {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      background-color: #2575fc;
-      color: white;
-      font-size: 16px;
-      border-radius: 10px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
+        button:disabled {
+            background: #a5b4fc;
+        }
 
-    .glass-form input[type="submit"]:hover {
-      background-color: #1a5ed7;
-    }
+        .register-footer {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
 
-    i {
-      color: white;
-    }
-	
-/* Enabled button (already exists) */
-.glass-form input[type="submit"] {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  background-color: #2575fc;
-  color: white;
-  font-size: 16px;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-/* Hover style for enabled button */
-.glass-form input[type="submit"]:hover:enabled {
-  background-color: #1a5ed7;
-}
-
-/* Disabled button style */
-.glass-form input[type="submit"]:disabled {
-  background-color: #cccccc;     /* Light gray */
-  color: #666666;                /* Dimmed text */
-  cursor: not-allowed;
-  opacity: 0.6;
-  box-shadow: none;
-}
-  </style>
+        .register-footer a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-
-<div style="position: absolute; top: 20px; right: 30px;">
-  <a href="login.php" class="btn btn-outline-light">Login</a>
+<div class="register-container">
+    <h2>Create Your Account</h2>
+    <?php echo $message; ?>
+    <form method="POST" action="" onsubmit="return validateForm()">
+        <div class="input-group">
+            <i class="fa fa-user"></i>
+            <input type="text" id="username" name="username" placeholder="Username" required>
+        </div>
+        <div class="input-group">
+            <i class="fa fa-envelope"></i>
+            <input type="email" id="email" name="email" placeholder="Email (must be @gmail.com)" required>
+        </div>
+        <div class="input-group">
+            <i class="fa fa-lock"></i>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+        </div>
+        <button type="submit" id="registerBtn" disabled>Register</button>
+    </form>
+    <div class="register-footer">
+        Already have an account? <a href="login.php">Login here</a>
+    </div>
 </div>
-
-<?php if (!empty($message)) echo "<div style='position:absolute; top:120px; text-align:center; width:100%;'>" . $message . "</div>"; ?>
-
-<form class="glass-form" method="POST" action="" onsubmit="return validateForm();">
-  <h2>Register</h2>
-
-  <div class="input-group">
-    <i class="fa fa-user"></i>
-    <input type="text" name="username" id="username" placeholder="Username" oninput="validateUsername()" required>
-  </div>
-  <div id="usernameError" style="color: red; font-size: 14px; margin-top: -10px; margin-bottom: 15px;"></div>
-
-<div class="input-group">
-  <i class="fa fa-envelope"></i>
-  <input type="email" name="email" id="email" placeholder="Email" oninput="validateEmail()" required>
-</div>
-<div id="emailError" style="color: red; font-size: 14px; margin-top: -10px; margin-bottom: 15px;"></div>
-
-
-  <div class="input-group">
-    <i class="fa fa-lock"></i>
-    <input type="password" name="password" id="password" placeholder="Password" oninput="validatePassword()" required>
-  </div>
-  <div id="passwordError" style="color: red; font-size: 14px; margin-top: -10px; margin-bottom: 15px;"></div>
-
-  <input type="submit" value="Register" id="registerBtn" disabled>
-
-
-</form>
 
 <script>
-document.getElementById("username").addEventListener("input", validateForm);
-document.getElementById("email").addEventListener("input", validateForm);
-document.getElementById("password").addEventListener("input", validateForm);
+    const usernameInput = document.getElementById("username");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const registerBtn = document.getElementById("registerBtn");
 
-// Master validation function
-function validateForm() {
-  const usernameValid = validateUsername();
-  const emailValid = validateEmail();
-  const passwordValid = validatePassword();
+    function validateForm() {
+        const username = usernameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
 
-  const allValid = usernameValid && emailValid && passwordValid;
-  document.getElementById("registerBtn").disabled = !allValid;
-  return allValid;
-}
+        const isValidUsername = /^[A-Za-z]+$/.test(username);
+        const isValidEmail = /^[^\s@]+@gmail\.com$/.test(email);
+        const isValidPassword = password.length >= 8 && password.length <= 10 &&
+            /[A-Z]/.test(password) &&
+            /[a-z]/.test(password) &&
+            /[0-9]/.test(password) &&
+            /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
-// Username: only alphabets
-function validateUsername() {
-  const username = document.getElementById("username").value.trim();
-  const errorDiv = document.getElementById("usernameError");
-  const isValid = /^[A-Za-z]+$/.test(username);
+        const formValid = username !== "" && email !== "" && password !== "" &&
+            isValidUsername && isValidEmail && isValidPassword;
 
-  if (!isValid) {
-    errorDiv.textContent = "Username must contain only alphabets (A–Z or a–z).";
-    document.getElementById("username").style.borderColor = "red";
-  } else {
-    errorDiv.textContent = "";
-    document.getElementById("username").style.borderColor = "black";
-  }
+        registerBtn.disabled = !formValid;
+        return formValid;
+    }
 
-  return isValid;
-}
-
-// Email: must end with @gmail.com
-function validateEmail() {
-  const emailInput = document.getElementById("email");
-  const email = emailInput.value.trim();
-  const errorDiv = document.getElementById("emailError");
-  const isValid = /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
-
-  if (!isValid) {
-    errorDiv.textContent = "Email must end with @gmail.com";
-    emailInput.style.borderColor = "red";
-  } else {
-    errorDiv.textContent = "";
-    emailInput.style.borderColor = "black";
-  }
-
-  return isValid;
-}
-
-// Password: validate length and required characters
-function validatePassword() {
-  const password = document.getElementById("password").value;
-  const errorDiv = document.getElementById("passwordError");
-
-  const errors = [];
-
-  if (password.length < 8 || password.length > 10)
-    errors.push("8–10 characters");
-  if (!/[A-Z]/.test(password))
-    errors.push("One uppercase letter");
-  if (!/[a-z]/.test(password))
-    errors.push("One lowercase letter");
-  if (!/[0-9]/.test(password))
-    errors.push("One digit");
-  if (!/[!@#$%^&*(),.?\":{}|<>]/.test(password))
-    errors.push("At least one special character");
-
-  if (errors.length > 0) {
-    errorDiv.innerHTML = "Password must contain:<br>• " + errors.join("<br>• ");
-    document.getElementById("password").style.borderColor = "red";
-    return false;
-  } else {
-    errorDiv.innerHTML = "";
-    document.getElementById("password").style.borderColor = "black";
-    return true;
-  }
-}
+    usernameInput.addEventListener("input", validateForm);
+    emailInput.addEventListener("input", validateForm);
+    passwordInput.addEventListener("input", validateForm);
 </script>
-
-
 </body>
 </html>

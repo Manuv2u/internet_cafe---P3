@@ -2,7 +2,7 @@
 session_start();
 require 'db_connect.php';
 
-$error = ""; // To store error messages
+$error = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST['username']);
@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Internet Cafe Shop</title>
+    <title>Login - Internet Cafe</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         * {
@@ -59,10 +59,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
         }
 
-        .left-panel {
-            background: url('https://cdn.pixabay.com/photo/2017/10/10/21/47/laptop-2838921_1280.jpg') no-repeat center center/cover;
-        }
-
         .main-wrapper {
             width: 400px;
             padding: 40px;
@@ -71,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
 
-        .right-panel h2 {
+        h2 {
             font-size: 26px;
             font-weight: 700;
             margin-bottom: 20px;
@@ -128,8 +124,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             margin-top: 10px;
         }
 
-        .button-group button,
-        .button-group a button {
+        .button-group button {
             flex: 1;
             padding: 12px;
             border: none;
@@ -159,13 +154,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </style>
 </head>
 <body>
-<div class="main-wrapper right-panel">
+<div class="main-wrapper">
     <div class="logo">
         <img src="https://cdn-icons-png.flaticon.com/512/888/888879.png" alt="Logo">
     </div>
-    <h2>Login to Internet Cafe Shop</h2>
+    <h2>Login to Internet Cafe</h2>
+
     <?php if (!empty($error)) echo "<div class='error-message'>" . htmlspecialchars($error) . "</div>"; ?>
-    <form method="POST" action="" onsubmit="return validateForm()">
+
+    <form method="POST" action="">
         <div class="input-group">
             <i class="fa fa-user"></i>
             <input type="text" id="username" name="username" placeholder="Username" required>
@@ -179,10 +176,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div id="passwordError" class="error-message"></div>
 
         <div class="button-group">
-            <button type="submit" id="loginBtn" disabled>Login</button>
-            <a href="register.php">
-                <button type="button" class="register-btn">Register</button>
-            </a>
+            <button type="submit" id="loginBtn">Login</button>
+            <a href="register.php"><button type="button" class="register-btn">Register</button></a>
         </div>
     </form>
 </div>
@@ -195,25 +190,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     const usernameError = document.getElementById("usernameError");
     const passwordError = document.getElementById("passwordError");
 
-    function validateForm() {
+    function validateInputs() {
         const username = usernameInput.value.trim();
         const password = passwordInput.value;
         let isValid = true;
 
-        if (username === "") {
-            usernameError.textContent = "Username is required.";
-            isValid = false;
-        } else if (!/^[A-Za-z]+$/.test(username)) {
+        if (!/^[A-Za-z]+$/.test(username)) {
             usernameError.textContent = "Only alphabets are allowed in username.";
             isValid = false;
         } else {
             usernameError.textContent = "";
         }
 
-        if (password === "") {
-            passwordError.textContent = "Password is required.";
-            isValid = false;
-        } else if (password.length < 6) {
+        if (password.length < 6) {
             passwordError.textContent = "Password must be at least 6 characters.";
             isValid = false;
         } else {
@@ -221,11 +210,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         loginBtn.disabled = !isValid;
-        return isValid;
     }
 
-    usernameInput.addEventListener("input", validateForm);
-    passwordInput.addEventListener("input", validateForm);
+    usernameInput.addEventListener("input", validateInputs);
+    passwordInput.addEventListener("input", validateInputs);
 </script>
 </body>
 </html>

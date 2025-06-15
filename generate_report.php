@@ -21,14 +21,14 @@ if ($start_date && $end_date) {
                     u.name AS user_name,
                     u.mobile_number,
                     u.email,
-                    c.computer_name,
+                    b.computer_name,
                     b.start_session,
                     b.end_session,
                     b.duration,
                     b.amount_billed
                 FROM bookings b
                 JOIN user u ON b.user_id = u.id
-                JOIN computers c ON b.computer_name = c.id
+                -- JOIN computers c ON b.computer_name = c.id
                 WHERE DATE(b.start_session) BETWEEN ? AND ?
                 ORDER BY b.start_session DESC";
         $stmt = $conn->prepare($sql);
@@ -47,14 +47,14 @@ if (!isset($result)) {
                 u.name AS user_name,
                 u.mobile_number,
                 u.email,
-                c.computer_name,
+                b.computer_name,
                 b.start_session,
                 b.end_session,
                 b.duration,
                 b.amount_billed
             FROM bookings b
             JOIN user u ON b.user_id = u.id
-            JOIN computers c ON b.computer_name = c.id
+            -- JOIN computers c ON b.computer_name = c.id
             ORDER BY b.start_session DESC";
     $result = $conn->query($sql);
 }

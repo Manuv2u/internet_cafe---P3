@@ -6,7 +6,7 @@ $message = "";
 $selected_mode = "available";
 
 // Load available computers
-$computers = $conn->query("SELECT computer_name, computer_name, id FROM computers WHERE status = 'available'");
+$computers = $conn->query("SELECT computer_name, id FROM computers WHERE status = 'available'");
 
 if (isset($_GET['search'])) {
     $search = $_GET['search'];
@@ -44,7 +44,7 @@ if (isset($_GET['modeSelector']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
         SELECT b.id, u.name as user_name, c.computer_name, b.start_session,c.id as cid
         FROM bookings b
         JOIN user u ON b.user_id = u.id 
-        JOIN computers c ON (b.computer_name = c.computer_name || b.computer_name = c.id) AND c.status = 'in use' AND b.amount_billed = 0
+        JOIN computers c ON (b.computer_name = c.computer_name ) AND c.status = 'in use' AND b.amount_billed = 0
         ORDER BY b.start_session ASC
     ");
     if ($bookings_result) {
@@ -81,11 +81,12 @@ if (isset($_GET['modeSelector']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
         $stmt->execute();
         $result = $stmt->get_result();
         $computer = $result->fetch_assoc();
+        $computer_name = $computer['computer_name'];
         $amount_billed = 0;
         $duration = 0;
 
         $stmt = $conn->prepare("INSERT INTO bookings (user_id, computer_name, start_session, end_session, duration, amount_billed) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("iissid", $user_id, $computer_id, $start_session, $start_session, $duration, $amount_billed);
+        $stmt->bind_param("isssid", $user_id, $computer_name, $start_session, $start_session, $duration, $amount_billed);
 
         if ($stmt->execute()) {
                 $test = "6";
@@ -493,7 +494,7 @@ window.onload = function () {
                         console.log(selected_booking);
                         console.log(host)
 
-                        let url = new URL(host+"/internet_cafe---P3/edit_booking.php")
+                        let url = new URL(host+"/internet_cafe/edit_booking.php")
                         url.searchParams.append('user',user['name'])
                         url.searchParams.append('computer_id',selected_booking['cid'])
                         url.searchParams.append('booking_id',booking_id)

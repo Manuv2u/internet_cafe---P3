@@ -43,6 +43,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <title>Register - Internet Cafe Shop</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
+         * {
+            box-sizing: border-box;
+        }
         body {
             margin: 0;
             padding: 0;

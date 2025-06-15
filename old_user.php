@@ -149,11 +149,17 @@ $result = $conn->query($sql);
 </head>
 <body>
     <!-- Navbar -->
+
 <div class="navbar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="https://cdn-icons-png.flaticon.com/512/888/888879.png" alt="Logo" style="width: 30px;">
+        <strong style="color: #007bff; font-size: 18px;">Internet Cafe Shop</strong>
+    </div>
+
     <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
 
     <div class="dropdown">
-        <a href="#"><i class="fas fa-desktop"></i> Computer <i class="fas fa-caret-down"></i></a>
+        <a href="#"><i class="fas fa-desktop"></i> Computer</a>
         <div class="dropdown-content">
             <a href="add_computer.php">Add Computer</a>
             <a href="manage_computers.php">Manage Computers</a>
@@ -161,16 +167,19 @@ $result = $conn->query($sql);
     </div>
 
     <div class="dropdown">
-        <a href="#"><i class="fas fa-users"></i> User <i class="fas fa-caret-down"></i></a>
+        <a href="#"><i class="fas fa-users"></i> User</a>
         <div class="dropdown-content">
             <a href="add_user.php">Add User</a>
             <a href="manage_user.php">Manage Users</a>
         </div>
     </div>
-        <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
+
+    <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
     <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
     <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
+    <a href="logout.php" style="margin-left:auto;"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
+
 
 <h2>Archived User</h2>
 <a href="manage_user.php">Back to Manage User</a><br><br>

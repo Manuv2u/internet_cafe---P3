@@ -6,7 +6,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $ip = $_POST['ip_address'];
     $status = $_POST['status'];
 
-    // Server-side IP address validation
     if (!filter_var($ip, FILTER_VALIDATE_IP)) {
         $message = "❌ Invalid IP address format.";
     } else {
@@ -17,168 +16,113 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Computer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            box-sizing: border-box;
-        }
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
             margin: 0;
-            min-height: 100vh;
         }
 
-        /* Navbar */
-          .navbar {
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 14px 30px;
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    flex-wrap: wrap;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid #ddd;
-}
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 14px 30px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
 
-.navbar a {
-    color: #333;
-    text-decoration: none;
-    font-weight: 500;
-    padding: 10px 16px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
+        .navbar a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-.navbar a:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-    color: #007bff;
-}
+        .navbar a:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
 
-/* Dropdown styles */
-.dropdown {
-    position: relative;
-}
+        .dropdown {
+            position: relative;
+        }
 
-.dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    min-width: 180px;
-    overflow: hidden;
-    z-index: 999;
-}
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            min-width: 160px;
+            z-index: 1;
+        }
 
-.dropdown-content a {
-    padding: 12px 16px;
-    color: #333;
-    display: block;
-    transition: background 0.3s;
-}
+        .dropdown-content a {
+            padding: 10px;
+            display: block;
+            color: #333;
+        }
 
-.dropdown-content a:hover {
-    background-color: #f0f0f0;
-    color: #007bff;
-}
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
 
-.dropdown:hover .dropdown-content {
-    display: block;
-}
+        .form-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            margin: 50px auto;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        }
 
-        /* Form Container */
-       .form-container {
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    padding: 35px 40px;
-    border-radius: 20px;
-    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.4);
-    width: 100%;
-    max-width: 500px;
-    margin: 60px auto;
-    border: 1px solid rgba(200, 200, 200, 0.3);
-}
-
-
-        h2 {
+        .form-container h2 {
             text-align: center;
             margin-bottom: 25px;
-            color: #222;
-            font-weight: 600;
-            font-size: 26px;
         }
 
         label {
-            font-size: 16px;
-            font-weight: 500;
-            color: #444;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
+            font-weight: 500;
         }
 
-         input[type="text"],
-select {
-	width:100%;
-	margin-bottom:25px;
-    background: #fdfdfd;
-    border: 1px solid #ccc;
-    padding: 12px 16px;
-    border-radius: 10px;
-    font-size: 15px;
-    transition: all 0.3s ease-in-out;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-}
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
 
-input:focus,
-select:focus {
-    border-color: #74ebd5;
-    box-shadow: 0 0 10px rgba(116, 235, 213, 0.6);
-    background: #fff;
-}
-
-button {
-    background: linear-gradient(to right, #74ebd5, #ACB6E5);
-    border: none;
-    padding: 14px;
-    border-radius: 10px;
-    width: 100%;
-    color: white;
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(116, 235, 213, 0.4);
-}
-
-button:hover {
-    background: linear-gradient(to right, #ACB6E5, #74ebd5);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(116, 235, 213, 0.5);
-}
-
+        button {
+            background: linear-gradient(to right, #74ebd5, #ACB6E5);
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            width: 100%;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
 
         .message {
             text-align: center;
             font-weight: bold;
-            font-size: 16px;
             margin-bottom: 20px;
             color: green;
         }
@@ -186,134 +130,85 @@ button:hover {
         .error {
             color: red;
         }
-
-        a.back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #555;
-            font-weight: 500;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-
-        a.back-link:hover {
-            color: #007bff;
-        }
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
 
-        <div class="dropdown">
-            <a href="#"><i class="fas fa-desktop"></i> Computer <i class="fas fa-caret-down"></i></a>
-            <div class="dropdown-content">
-                <a href="add_computer.php">Add Computer</a>
-                <a href="manage_computers.php">Manage Computers</a>
-            </div>
-        </div>
-
-        <div class="dropdown">
-            <a href="#"><i class="fas fa-users"></i> User <i class="fas fa-caret-down"></i></a>
-            <div class="dropdown-content">
-                <a href="add_user.php">Add User</a>
-                <a href="manage_user.php">Manage Users</a>
-            </div>
-        </div>
-
-        <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
-        <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
-        <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
+<div class="navbar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="https://cdn-icons-png.flaticon.com/512/888/888879.png" alt="Logo" style="width: 30px;">
+        <strong style="color: #007bff; font-size: 18px;">Internet Cafe Shop</strong>
     </div>
 
-    <!-- Form -->
-    <div class="form-container">
-        <h2>Add New Computer</h2>
+    <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
 
-        <?php
-            if (isset($message)) {
-                echo "<div class='message " . (str_starts_with($message, '✅') ? '' : 'error') . "'>"
-                    . htmlspecialchars($message) . "</div>";
-            }
-        ?>
-
-        <!-- Note: We added onsubmit="return validateForm()". -->
-        <form method="POST" onsubmit="return validateForm()">
-            <label for="computer_name">Computer Name:</label>
-            <input type="text" id="computer_name" name="computer_name" required>
-            <!-- Placeholder for error message -->
-            <div id="computerNameError" class="error"></div>
-
-            <label for="ip_address">IP Address:</label>
-            <input type="text" id="ip_address" name="ip_address" required
-                   placeholder="e.g. 192.168.1.1">
-            <!-- Placeholder for error message -->
-            <div id="ipError" class="error"></div>
-
-            <label for="status">Status:</label>
-            <select id="status" name="status">
-                <option value="available">Available</option>
-                <option value="in use">In Use</option>
-            </select>
-
-            <button type="submit">Add Computer</button>
-        </form>
-        <!-- <a class="back-link" href="manage_computers.php">Back to Manage Computers</a> -->
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-desktop"></i> Computer</a>
+        <div class="dropdown-content">
+            <a href="add_computer.php">Add Computer</a>
+            <a href="manage_computers.php">Manage Computers</a>
+        </div>
     </div>
 
-    <script>
-    function validateForm() {
-        // Grab all necessary elements
-        const compNameInput = document.getElementById("computer_name");
-        const ipInput = document.getElementById("ip_address");
-        const computerNameError = document.getElementById("computerNameError");
-        const ipError = document.getElementById("ipError");
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-users"></i> User</a>
+        <div class="dropdown-content">
+            <a href="add_user.php">Add User</a>
+            <a href="manage_user.php">Manage Users</a>
+        </div>
+    </div>
 
-        // Trim and read their values
-        const compName = compNameInput.value.trim();
-        const ip = ipInput.value.trim();
+    <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
+    <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
+    <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
+    <a href="logout.php" style="margin-left:auto;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</div>
 
-        let isValid = true;
 
-        // Clear previous error messages
-        computerNameError.textContent = "";
-        ipError.textContent = "";
+<div class="form-container">
+    <h2>Add New Computer</h2>
 
-        // 1) Computer Name must not be empty
-        if (compName === "") {
-            computerNameError.textContent = "Computer Name is required.";
-            isValid = false;
-        }
+    <?php if (isset($message)): ?>
+        <div class="message <?php echo str_starts_with($message, '❌') ? 'error' : ''; ?>">
+            <?php echo htmlspecialchars($message); ?>
+        </div>
+    <?php endif; ?>
 
-        // 2) IP Address must not be empty
-        if (ip === "") {
-            ipError.textContent = "IP Address is required.";
-            isValid = false;
-        } else {
-            // 3) Check basic pattern ###.###.###.###
-            const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
-            if (!ipPattern.test(ip)) {
-                ipError.textContent = "Enter a valid IP address .";
-                isValid = false;
-            } else {
-                // 4) Ensure each octet is between 0 and 255
-                const parts = ip.split(".");
-                for (let i = 0; i < parts.length; i++) {
-                    const octet = parseInt(parts[i], 10);
-                    if (octet < 0 || octet > 255) {
-                        ipError.textContent = "Each octet must be between 0 and 255.";
-                        isValid = false;
-                        break;
-                    }
-                }
-            }
-        }
+    <form method="POST" onsubmit="return validateForm()">
+        <label for="computer_name">Computer Name:</label>
+        <input type="text" id="computer_name" name="computer_name" required>
 
-        // If any check failed, prevent form submission
-        return isValid;
+        <label for="ip_address">IP Address:</label>
+        <input type="text" id="ip_address" name="ip_address" placeholder="e.g. 192.168.1.10" required>
+
+        <label for="status">Status:</label>
+        <select name="status" id="status">
+            <option value="available">Available</option>
+            <option value="in use">In Use</option>
+        </select>
+
+        <button type="submit">Add Computer</button>
+    </form>
+</div>
+
+<script>
+function validateForm() {
+    const ip = document.getElementById('ip_address').value;
+    const ipParts = ip.split('.');
+    if (ipParts.length !== 4) {
+        alert('Invalid IP address format.');
+        return false;
     }
-    </script>
+    for (let part of ipParts) {
+        const num = Number(part);
+        if (isNaN(num) || num < 0 || num > 255) {
+            alert('Each part of IP address must be between 0 and 255.');
+            return false;
+        }
+    }
+    return true;
+}
+</script>
+
 </body>
 </html>

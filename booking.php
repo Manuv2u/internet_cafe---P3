@@ -76,7 +76,7 @@ if (isset($_GET['modeSelector']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
         $rate_per_minute = 1.50;
         $amount_billed = $duration * $rate_per_minute;
 
-        $stmt = $conn->prepare("SELECT * FROM computers WHERE id = ?");
+        $stmt = $conn->prepare("SELECT computer_name FROM computers WHERE id = ?");
         $stmt->bind_param("i", $computer_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -90,6 +90,7 @@ if (isset($_GET['modeSelector']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
         if ($stmt->execute()) {
                 $test = "6";
                 $conn->query("UPDATE computers SET status = 'in use' WHERE id = $computer_id");
+                //  $conn->query("UPDATE user SET status = 'in use' WHERE id = $user_id");
                 $message = "Booking session started";
         }
    // }
@@ -99,37 +100,56 @@ if (isset($_GET['modeSelector']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Session</title>
-    <style>
-        body {
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+       <style>
+	   *{
+		box-sizing : border-box;
+	}
+      body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
-            padding: 40px;
+            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
+            
         }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-        h2 {
-            text-align: center;
-            color: #333;
-        }
-        form {
-            margin-top: 20px;
-        }
-        input, select, button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 15px;
-            font-size: 15px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-        }
-        button {
+       .container {
+    max-width: 600px;
+    margin: 90px auto 0 auto; /* ⬅️ Top margin added here */
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+h2 {
+    text-align: center;
+    color:  #8ec5fc;
+    margin-bottom: 30px;
+}
+
+form {
+    margin-top: 20px;
+}
+
+input, select, button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 12px;
+    font-size: 16px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    transition: 0.3s;
+}
+
+input:focus, select:focus {
+    border-color: #f8b500;
+    box-shadow: 0 0 5px rgba(248, 181, 0, 0.5);
+    outline: none;
+}
+
+ button {
             background: linear-gradient(to right, #74ebd5, #ACB6E5);
             color: white;
             font-weight: bold;
@@ -139,25 +159,190 @@ if (isset($_GET['modeSelector']) && $_SERVER['REQUEST_METHOD'] !== 'POST') {
         button:hover {
             background: linear-gradient(to right, #ACB6E5, #74ebd5);
         }
-        .info, .success {
-            text-align: center;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-        .success {
-            color: green;
-        }
-        .info {
-            color: #555;
-        }
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
+
+.info, .success {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.info {
+   background-color: #e6e6fa;
+    color: #4b0082;
+}
+
+label {
+    display: block;
+    margin-top: 10px;
+    font-weight: 600;
+    color: #333;
+}
+
+.user-card {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-left: 6px solid #f8b500;
+    border-radius: 10px;
+}
+
+#booking_table {
+    width: 100%;
+    margin-top: 30px;
+    border-collapse: collapse;
+}
+
+#booking_table th, #booking_table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+
+select#modeSelector {
+    margin-top: 10px;
+}
+#booking_table {
+    width: 100%;
+    margin-top: 30px;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#booking_table thead {
+    background-color: #6a0dad; /* Deep Slate Blue (Contrast) */
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#booking_table th, #booking_table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f1f1f1;
+    text-align: left;
+    font-size: 15px;
+}
+
+#booking_table tbody tr:hover {
+    background-color: #c8ade2;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+#booking_table thead th:first-child {
+    border-top-left-radius: 10px;
+}
+#booking_table thead th:last-child {
+    border-top-right-radius: 10px;
+}
+
+#booking_table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+#booking_table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+        /* Navbar */
+          .navbar {
+   position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 14px 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navbar a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 12px;
+            transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+}
+
+/* Dropdown styles */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    overflow: hidden;
+    z-index: 999;
+}
+
+.dropdown-content a {
+    padding: 12px 16px;
+    color: #333;
+    display: block;
+    transition: background 0.3s;
+}
+
+.dropdown-content a:hover {
+    background-color: #f0f0f0;
+    color: #007bff;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+
+
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+<div class="navbar">
+    <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
+
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-desktop"></i> Computer <i class="fas fa-caret-down"></i></a>
+        <div class="dropdown-content">
+            <a href="add_computer.php">Add Computer</a>
+            <a href="manage_computers.php">Manage Computers</a>
+        </div>
+    </div>
+
+    <div class="dropdown">
+        <a href="#"><i class="fas fa-users"></i> User <i class="fas fa-caret-down"></i></a>
+        <div class="dropdown-content">
+            <a href="add_user.php">Add User</a>
+            <a href="manage_user.php">Manage Users</a>
+        </div>
+    </div>
+        <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
+    <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
+    <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
+</div>
 
 <div class="container">
     <h2>Book User Session</h2>

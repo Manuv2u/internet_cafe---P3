@@ -1,56 +1,61 @@
 <?php
 require 'db_connect.php';
 
+$errors = [];
+$message = "";
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name          = trim($_POST['name']);
     $address       = trim($_POST['address']);
     $mobile_number = trim($_POST['mobile_number']);
     $email         = trim($_POST['email']);
 
-   $errors = [];
-
-if (!preg_match("/^[A-Z][a-z]*( [A-Z][a-z]*)*$/", $name)) {
-    $errors[] = "Name must start with capital letters and contain only alphabets.";
-}
-
-if (!preg_match("/^[6-9][0-9]{9}$/", $mobile_number)) {
-    $errors[] = "Mobile number must start with 6, 7, 8, or 9 and be 10 digits.";
-} else {
-    $checkMobile = $conn->prepare("SELECT id FROM user WHERE mobile_number = ?");
-    $checkMobile->bind_param("s", $mobile_number);
-    $checkMobile->execute();
-    $checkMobile->store_result();
-    if ($checkMobile->num_rows > 0) {
-        $errors[] = "Mobile number already exists.";
+    if (!preg_match("/^[A-Z][a-z]*( [A-Z][a-z]*)*$/", $name)) {
+        $errors[] = "Name must start with capital letters and contain only alphabets.";
     }
-    $checkMobile->close();
-}
 
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $errors[] = "Invalid email format.";
-} else {
-    $checkEmail = $conn->prepare("SELECT id FROM user WHERE email = ?");
-    $checkEmail->bind_param("s", $email);
-    $checkEmail->execute();
-    $checkEmail->store_result();
-    if ($checkEmail->num_rows > 0) {
-        $errors[] = "Email already exists.";
-    }
-    $checkEmail->close();
-}
-
-if (empty($errors)) {
-    $stmt = $conn->prepare("INSERT INTO user (name, address, mobile_number, email) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $name, $address, $mobile_number, $email);
-
-    if ($stmt->execute()) {
-        $message = "User added successfully!";
+    if (!preg_match("/^[6-9][0-9]{9}$/", $mobile_number)) {
+        $errors[] = "Mobile number must start with 6, 7, 8, or 9 and be 10 digits.";
     } else {
-        $message = "Error: " . $stmt->error;
+        $checkMobile = $conn->prepare("SELECT id FROM user WHERE mobile_number = ?");
+        $checkMobile->bind_param("s", $mobile_number);
+        $checkMobile->execute();
+        $checkMobile->store_result();
+        if ($checkMobile->num_rows > 0) {
+            $errors[] = "Mobile number already exists.";
+        }
+        $checkMobile->close();
     }
 
-    $stmt->close();
-}
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !str_ends_with($email, '@gmail.com')) {
+        $errors[] = "Email must be a valid Gmail address (e.g., yourname@gmail.com).";
+    } else {
+        $checkEmail = $conn->prepare("SELECT id FROM user WHERE email = ?");
+        $checkEmail->bind_param("s", $email);
+        $checkEmail->execute();
+        $checkEmail->store_result();
+        if ($checkEmail->num_rows > 0) {
+            $errors[] = "Email already exists.";
+        }
+        $checkEmail->close();
+    }
+
+    if (strlen($address) < 10) {
+        $errors[] = "Address must be at least 10 characters long.";
+    }
+
+    if (empty($errors)) {
+        $stmt = $conn->prepare("INSERT INTO user (name, address, mobile_number, email) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $name, $address, $mobile_number, $email);
+
+        if ($stmt->execute()) {
+            $message = "User added successfully!";
+        } else {
+            $message = "Error: " . $stmt->error;
+        }
+
+        $stmt->close();
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -64,7 +69,7 @@ if (empty($errors)) {
         * { box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fbc2eb, #a6c1ee);
+            background: linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
             margin: 0; padding: 0;
         }
         .navbar {
@@ -133,7 +138,7 @@ if (empty($errors)) {
             width: 100%;
             padding: 12px 15px;
             margin-top: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 15px;
@@ -157,19 +162,16 @@ if (empty($errors)) {
             letter-spacing: 1px;
             cursor: pointer;
             transition: background 0.3s;
+            margin-top: 10px;
         }
         button:hover {
             background: linear-gradient(to right, #ACB6E5, #74ebd5);
         }
-        a.manage-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #333;
-            font-weight: bold;
-            text-decoration: none;
+        .field-error {
+            color: red;
+            font-size: 13px;
+            margin-bottom: 10px;
         }
-        a.manage-link:hover { color: #007bff; }
         p {
             text-align: center;
             color: green;
@@ -206,81 +208,97 @@ if (empty($errors)) {
 <div class="container">
     <div class="form-container">
         <?php
-    if (!empty($errors)) {
-        echo "<ul style='color:red;'>";
-        foreach ($errors as $err) {
-            echo "<li>" . htmlspecialchars($err) . "</li>";
-        }
-        echo "</ul>";
-    } elseif (isset($message)) {
-        echo "<p>$message</p>";
-    }
-?>
+            if (!empty($errors)) {
+                echo "<ul style='color:red;'>";
+                foreach ($errors as $err) {
+                    echo "<li>" . htmlspecialchars($err) . "</li>";
+                }
+                echo "</ul>";
+            } elseif (!empty($message)) {
+                echo "<p>$message</p>";
+            }
+        ?>
 
         <h2>Add New User</h2>
-        <?php if (isset($message)) echo "<p>$message</p>"; ?>
-        <form method="POST">
+        <form method="POST" novalidate>
             <label>Name:</label>
             <input type="text" name="name" value="<?= isset($name) ? htmlspecialchars($name) : '' ?>" required onblur="capitalizeName(this)">
-
+            <div id="name-error" class="field-error"></div>
 
             <label>Address:</label>
-            <textarea name="address" rows="3" required></textarea>
+            <textarea name="address" rows="3" required><?= isset($address) ? htmlspecialchars($address) : '' ?></textarea>
+            <div id="address-error" class="field-error"></div>
 
             <label>Mobile Number:</label>
-            <input type="text" name="mobile_number" required>
+            <input type="text" name="mobile_number" value="<?= isset($mobile_number) ? htmlspecialchars($mobile_number) : '' ?>" required>
+            <div id="mobile-error" class="field-error"></div>
 
             <label>Email:</label>
-            <input type="email" name="email" required>
+            <input type="email" name="email" value="<?= isset($email) ? htmlspecialchars($email) : '' ?>" required>
+            <div id="email-error" class="field-error"></div>
 
             <button type="submit">Add User</button>
         </form>
     </div>
 </div>
 
-<!-- JavaScript validation -->
+<!-- JavaScript -->
 <script>
 document.querySelector("form").addEventListener("submit", function (e) {
+    let isValid = true;
+
     const name = document.querySelector('input[name="name"]');
     const address = document.querySelector('textarea[name="address"]');
     const mobile = document.querySelector('input[name="mobile_number"]');
     const email = document.querySelector('input[name="email"]');
 
-    const nameRegex = /^[A-Za-z ]{2,}$/;
-    const mobileRegex = /^[6-9]\d{9}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const nameError = document.getElementById("name-error");
+    const addressError = document.getElementById("address-error");
+    const mobileError = document.getElementById("mobile-error");
+    const emailError = document.getElementById("email-error");
 
-    let errorMsg = "";
+    nameError.textContent = "";
+    addressError.textContent = "";
+    mobileError.textContent = "";
+    emailError.textContent = "";
 
+    const nameRegex = /^[A-Za-z ]+$/;
     if (!name.value.trim() || !nameRegex.test(name.value.trim())) {
-        errorMsg += "- Name must contain only letters and spaces.\n";
+        nameError.textContent = "Name must contain only letters and spaces.";
+        isValid = false;
     }
 
-    if (!address.value.trim()) {
-        errorMsg += "- Address cannot be empty.\n";
+    if (!address.value.trim() || address.value.trim().length < 10) {
+        addressError.textContent = "Address must be at least 10 characters long.";
+        isValid = false;
     }
 
+    const mobileRegex = /^[6-9]\d{9}$/;
     if (!mobileRegex.test(mobile.value.trim())) {
-        errorMsg += "- Enter a valid 10-digit mobile number starting with 6, 7, or 9.\n";
+        mobileError.textContent = "Mobile must be 10 digits and start with 6, 7, 8, or 9.";
+        isValid = false;
     }
 
-    if (!emailRegex.test(email.value.trim())) {
-        errorMsg += "- Enter a valid email address.\n";
+    const emailVal = email.value.trim();
+    if (!emailVal.endsWith("@gmail.com") || emailVal.indexOf("@") <= 0) {
+        emailError.textContent = "Email must be a valid Gmail address (e.g., yourname@gmail.com).";
+        isValid = false;
     }
 
-    if (errorMsg) {
+    if (!isValid) {
         e.preventDefault();
-        alert("Please correct the following:\n" + errorMsg);
     }
 });
+
 function capitalizeName(input) {
-        input.value = input.value
-            .toLowerCase()
-            .split(' ')
-            .filter(w => w.length > 0)
-            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-            .join(' ');
-    }
+    input.value = input.value
+        .toLowerCase()
+        .split(' ')
+        .filter(w => w.length > 0)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+}
 </script>
+
 </body>
 </html>

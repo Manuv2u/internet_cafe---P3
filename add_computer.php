@@ -203,56 +203,117 @@ button:hover {
     </style>
 </head>
 <body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
 
-<!-- Navbar -->
-<div class="navbar">
-    <a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a>
-
-    <div class="dropdown">
-        <a href="#"><i class="fas fa-desktop"></i> Computer <i class="fas fa-caret-down"></i></a>
-        <div class="dropdown-content">
-            <a href="add_computer.php">Add Computer</a>
-            <a href="manage_computers.php">Manage Computers</a>
+        <div class="dropdown">
+            <a href="#"><i class="fas fa-desktop"></i> Computer <i class="fas fa-caret-down"></i></a>
+            <div class="dropdown-content">
+                <a href="add_computer.php">Add Computer</a>
+                <a href="manage_computers.php">Manage Computers</a>
+            </div>
         </div>
-    </div>
 
-    <div class="dropdown">
-        <a href="#"><i class="fas fa-users"></i> User <i class="fas fa-caret-down"></i></a>
-        <div class="dropdown-content">
-            <a href="add_user.php">Add User</a>
-            <a href="manage_user.php">Manage Users</a>
+        <div class="dropdown">
+            <a href="#"><i class="fas fa-users"></i> User <i class="fas fa-caret-down"></i></a>
+            <div class="dropdown-content">
+                <a href="add_user.php">Add User</a>
+                <a href="manage_user.php">Manage Users</a>
+            </div>
         </div>
-    </div>
+
         <a href="booking.php"><i class="fa-solid fa-window-maximize"></i> Bookings</a>
-    <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
-    <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
-</div>
+        <a href="search_user.php"><i class="fas fa-search"></i> Search</a>
+        <a href="generate_report.php"><i class="fas fa-chart-line"></i> Reports</a>
+    </div>
 
-<!-- Form -->
-<div class="form-container">
-    <h2>Add New Computer</h2>
-    <?php
-        if (isset($message)) {
-            echo "<div class='message " . (str_starts_with($message, '✅') ? '' : 'error') . "'>" . htmlspecialchars($message) . "</div>";
+    <!-- Form -->
+    <div class="form-container">
+        <h2>Add New Computer</h2>
+
+        <?php
+            if (isset($message)) {
+                echo "<div class='message " . (str_starts_with($message, '✅') ? '' : 'error') . "'>"
+                    . htmlspecialchars($message) . "</div>";
+            }
+        ?>
+
+        <!-- Note: We added onsubmit="return validateForm()". -->
+        <form method="POST" onsubmit="return validateForm()">
+            <label for="computer_name">Computer Name:</label>
+            <input type="text" id="computer_name" name="computer_name" required>
+            <!-- Placeholder for error message -->
+            <div id="computerNameError" class="error"></div>
+
+            <label for="ip_address">IP Address:</label>
+            <input type="text" id="ip_address" name="ip_address" required
+                   placeholder="e.g. 192.168.1.1">
+            <!-- Placeholder for error message -->
+            <div id="ipError" class="error"></div>
+
+            <label for="status">Status:</label>
+            <select id="status" name="status">
+                <option value="available">Available</option>
+                <option value="in use">In Use</option>
+            </select>
+
+            <button type="submit">Add Computer</button>
+        </form>
+        <!-- <a class="back-link" href="manage_computers.php">Back to Manage Computers</a> -->
+    </div>
+
+    <script>
+    function validateForm() {
+        // Grab all necessary elements
+        const compNameInput = document.getElementById("computer_name");
+        const ipInput = document.getElementById("ip_address");
+        const computerNameError = document.getElementById("computerNameError");
+        const ipError = document.getElementById("ipError");
+
+        // Trim and read their values
+        const compName = compNameInput.value.trim();
+        const ip = ipInput.value.trim();
+
+        let isValid = true;
+
+        // Clear previous error messages
+        computerNameError.textContent = "";
+        ipError.textContent = "";
+
+        // 1) Computer Name must not be empty
+        if (compName === "") {
+            computerNameError.textContent = "Computer Name is required.";
+            isValid = false;
         }
-    ?>
-    <form method="POST">
-        <label for="computer_name">Computer Name:</label>
-        <input type="text" id="computer_name" name="computer_name" required>
 
-        <label for="ip_address">IP Address:</label>
-        <input type="text" id="ip_address" name="ip_address" required pattern="^(\d{1,3}\.){3}\d{1,3}$" title="Enter a valid IP address (e.g. 192.168.1.1)">
+        // 2) IP Address must not be empty
+        if (ip === "") {
+            ipError.textContent = "IP Address is required.";
+            isValid = false;
+        } else {
+            // 3) Check basic pattern ###.###.###.###
+            const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+            if (!ipPattern.test(ip)) {
+                ipError.textContent = "Enter a valid IP address .";
+                isValid = false;
+            } else {
+                // 4) Ensure each octet is between 0 and 255
+                const parts = ip.split(".");
+                for (let i = 0; i < parts.length; i++) {
+                    const octet = parseInt(parts[i], 10);
+                    if (octet < 0 || octet > 255) {
+                        ipError.textContent = "Each octet must be between 0 and 255.";
+                        isValid = false;
+                        break;
+                    }
+                }
+            }
+        }
 
-        <label for="status">Status:</label>
-        <select id="status" name="status">
-            <option value="available">Available</option>
-            <option value="in use">In Use</option>
-        </select>
-
-        <button type="submit">Add Computer</button>
-    </form>
-   <!-- <a class="back-link" href="manage_computers.php">-->
-</div>
-
+        // If any check failed, prevent form submission
+        return isValid;
+    }
+    </script>
 </body>
 </html>

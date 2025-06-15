@@ -9,12 +9,14 @@ $result = $conn->query($sql);
 <head>
 <meta charset="UTF-8">
 <title>Old User</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
         body {
             font-family: 'Poppins', sans-serif;
             background:  linear-gradient(135deg, #fbc2eb, #a6c1ee 100%);
             margin: 0;
-            padding: 20px;
+            padding: 64px;
         }
 
         h2 {
@@ -24,18 +26,18 @@ $result = $conn->query($sql);
         }
                 /* Navbar */
           .navbar {
-    background-color: rgba(255, 255, 255, 0.85);
-    padding: 14px 30px;
-    display: flex;
-    align-items: center;
-    gap: 25px;
-    flex-wrap: wrap;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid #ddd;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 14px 30px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .navbar a {
@@ -114,7 +116,7 @@ $result = $conn->query($sql);
         }
 
         th, td {
-            padding: 15px 20px;
+            padding: 16px 35px;
             text-align: center;
         }
 
